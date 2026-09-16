@@ -1,0 +1,31 @@
+.venv/
+__pycache__/
+*.py[cod]
+
+# Challenge data and derived datasets
+data/
+prepared/
+
+# Training outputs and large model artifacts
+runs/
+weights/
+submissions/
+*.pt
+*.pth
+*.ckpt
+*.onnx
+
+# Large image / archive artifacts
+*.tif
+*.tiff
+*.zip
+
+# Logs and local caches
+*.log
+.cache/
+
+# Local credentials
+.kaggle/
+kaggle.json
+access_token
+
