@@ -1,0 +1,252 @@
+=== two wbf 0.5 ===
+loading annotations into memory...
+Done (t=0.00s)
+creating index...
+index created!
+Loading and preparing results...
+DONE (t=0.08s)
+creating index...
+index created!
+Running per image evaluation...
+Evaluate annotation type *bbox*
+DONE (t=1.07s).
+Accumulating evaluation results...
+DONE (t=0.45s).
+{
+  "mAP_50_95": 0.6852321836099525,
+  "mAP_50": 0.9492408541347421,
+  "mAP_75": 0.8264690243249392,
+  "mAR": 0.7319963825756131,
+  "detections": 72968.0
+}
+=== two wbf 0.6 ===
+loading annotations into memory...
+Done (t=0.00s)
+creating index...
+index created!
+Loading and preparing results...
+DONE (t=0.09s)
+creating index...
+index created!
+Running per image evaluation...
+Evaluate annotation type *bbox*
+DONE (t=1.11s).
+Accumulating evaluation results...
+DONE (t=0.44s).
+{
+  "mAP_50_95": 0.686683609626598,
+  "mAP_50": 0.9501177577395169,
+  "mAP_75": 0.8283984125733749,
+  "mAR": 0.734283721780618,
+  "detections": 76630.0
+}
+=== two wbf 0.7 ===
+loading annotations into memory...
+Done (t=0.00s)
+creating index...
+index created!
+Loading and preparing results...
+DONE (t=0.10s)
+creating index...
+index created!
+Running per image evaluation...
+Evaluate annotation type *bbox*
+DONE (t=1.25s).
+Accumulating evaluation results...
+DONE (t=0.48s).
+{
+  "mAP_50_95": 0.6896633179584687,
+  "mAP_50": 0.949385374908622,
+  "mAP_75": 0.836310804241218,
+  "mAR": 0.7386185642425895,
+  "detections": 79113.0
+}
+=== two nms 0.5 ===
+loading annotations into memory...
+Done (t=0.00s)
+creating index...
+index created!
+Loading and preparing results...
+DONE (t=0.08s)
+creating index...
+index created!
+Running per image evaluation...
+Evaluate annotation type *bbox*
+DONE (t=1.07s).
+Accumulating evaluation results...
+DONE (t=0.44s).
+{
+  "mAP_50_95": 0.6809291008737272,
+  "mAP_50": 0.9484617644305198,
+  "mAP_75": 0.8178518701140537,
+  "mAR": 0.7288087794914176,
+  "detections": 73202.0
+}
+=== two nms 0.6 ===
+loading annotations into memory...
+Done (t=0.00s)
+creating index...
+index created!
+Loading and preparing results...
+DONE (t=0.09s)
+creating index...
+index created!
+Running per image evaluation...
+Evaluate annotation type *bbox*
+DONE (t=1.09s).
+Accumulating evaluation results...
+DONE (t=0.44s).
+{
+  "mAP_50_95": 0.6809099303614758,
+  "mAP_50": 0.9489678607855614,
+  "mAP_75": 0.8173300231862076,
+  "mAR": 0.7293299254218556,
+  "detections": 76731.0
+}
+=== two nms 0.7 ===
+loading annotations into memory...
+Done (t=0.00s)
+creating index...
+index created!
+Loading and preparing results...
+DONE (t=0.08s)
+creating index...
+index created!
+Running per image evaluation...
+Evaluate annotation type *bbox*
+DONE (t=1.20s).
+Accumulating evaluation results...
+DONE (t=0.45s).
+{
+  "mAP_50_95": 0.6841780000185788,
+  "mAP_50": 0.9473174458272118,
+  "mAP_75": 0.8250846553772663,
+  "mAR": 0.7358835827788975,
+  "detections": 79135.0
+}
+=== three wbf 0.5 ===
+loading annotations into memory...
+Done (t=0.00s)
+creating index...
+index created!
+Loading and preparing results...
+DONE (t=0.09s)
+creating index...
+index created!
+Running per image evaluation...
+Evaluate annotation type *bbox*
+DONE (t=1.27s).
+Accumulating evaluation results...
+DONE (t=0.47s).
+{
+  "mAP_50_95": 0.690076346864659,
+  "mAP_50": 0.9565685215262698,
+  "mAP_75": 0.8317697333671663,
+  "mAR": 0.7345313766167066,
+  "detections": 79326.0
+}
+=== three wbf 0.6 ===
+loading annotations into memory...
+Done (t=0.00s)
+creating index...
+index created!
+Loading and preparing results...
+DONE (t=0.16s)
+creating index...
+index created!
+Running per image evaluation...
+Evaluate annotation type *bbox*
+DONE (t=1.17s).
+Accumulating evaluation results...
+DONE (t=0.46s).
+{
+  "mAP_50_95": 0.6914416397896079,
+  "mAP_50": 0.9582988221507154,
+  "mAP_75": 0.8326263152062123,
+  "mAR": 0.7382123535566292,
+  "detections": 82188.0
+}
+=== three wbf 0.7 ===
+loading annotations into memory...
+Done (t=0.00s)
+creating index...
+index created!
+Loading and preparing results...
+DONE (t=0.17s)
+creating index...
+index created!
+Running per image evaluation...
+Evaluate annotation type *bbox*
+DONE (t=1.22s).
+Accumulating evaluation results...
+DONE (t=0.47s).
+{
+  "mAP_50_95": 0.692842109055644,
+  "mAP_50": 0.955124680237662,
+  "mAP_75": 0.8388361368236309,
+  "mAR": 0.742831180510911,
+  "detections": 83819.0
+}
+=== three nms 0.5 ===
+loading annotations into memory...
+Done (t=0.00s)
+creating index...
+index created!
+Loading and preparing results...
+DONE (t=0.10s)
+creating index...
+index created!
+Running per image evaluation...
+Evaluate annotation type *bbox*
+DONE (t=1.23s).
+Accumulating evaluation results...
+DONE (t=0.46s).
+{
+  "mAP_50_95": 0.6796062082869033,
+  "mAP_50": 0.9545926847716735,
+  "mAP_75": 0.8097780876734004,
+  "mAR": 0.7269930305511202,
+  "detections": 79512.0
+}
+=== three nms 0.6 ===
+loading annotations into memory...
+Done (t=0.00s)
+creating index...
+index created!
+Loading and preparing results...
+DONE (t=0.17s)
+creating index...
+index created!
+Running per image evaluation...
+Evaluate annotation type *bbox*
+DONE (t=1.18s).
+Accumulating evaluation results...
+DONE (t=0.46s).
+{
+  "mAP_50_95": 0.6796183963881164,
+  "mAP_50": 0.9547528645971252,
+  "mAP_75": 0.8090068466406367,
+  "mAR": 0.73005526548426,
+  "detections": 82279.0
+}
+=== three nms 0.7 ===
+loading annotations into memory...
+Done (t=0.00s)
+creating index...
+index created!
+Loading and preparing results...
+DONE (t=0.16s)
+creating index...
+index created!
+Running per image evaluation...
+Evaluate annotation type *bbox*
+DONE (t=1.26s).
+Accumulating evaluation results...
+DONE (t=0.47s).
+{
+  "mAP_50_95": 0.6832034272030897,
+  "mAP_50": 0.9523931983603706,
+  "mAP_75": 0.8176489906741611,
+  "mAR": 0.7373225614998233,
+  "detections": 83857.0
+}

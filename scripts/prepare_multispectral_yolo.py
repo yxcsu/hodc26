@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import argparse
 from concurrent.futures import ProcessPoolExecutor
+import hashlib
 import io
 import json
 from pathlib import Path
@@ -16,17 +17,20 @@ from PIL import Image
 _ZIP: zipfile.ZipFile | None = None
 _CLIP_MAX = 320.0
 _PSEUDO_BANDS: tuple[int, int, int] | None = None
+_OUTPUT_DTYPE = "uint8"
 
 
 def _init_worker(
     zip_path: str,
     clip_max: float,
     pseudo_bands: tuple[int, int, int] | None,
+    output_dtype: str,
 ) -> None:
-    global _ZIP, _CLIP_MAX, _PSEUDO_BANDS
+    global _ZIP, _CLIP_MAX, _PSEUDO_BANDS, _OUTPUT_DTYPE
     _ZIP = zipfile.ZipFile(zip_path)
     _CLIP_MAX = clip_max
     _PSEUDO_BANDS = pseudo_bands
+    _OUTPUT_DTYPE = output_dtype
 
 
 def x2cube(img: np.ndarray) -> np.ndarray:
@@ -36,12 +40,16 @@ def x2cube(img: np.ndarray) -> np.ndarray:
     return img.reshape(h // 4, 4, w // 4, 4).transpose(0, 2, 1, 3).reshape(h // 4, w // 4, 16)
 
 
-def scale_cube(cube: np.ndarray, clip_max: float) -> np.ndarray:
+def scale_cube(cube: np.ndarray, clip_max: float, output_dtype: str) -> np.ndarray:
     # Use one fixed global scale for all bands so cross-band intensity ratios
     # remain meaningful. The sensor values are uint16 but observed data are
     # concentrated in roughly 0..320.
-    out = cube.astype(np.float32) * (255.0 / clip_max)
-    return np.clip(out, 0, 255).astype(np.uint8)
+    normalized = np.clip(cube.astype(np.float32) / clip_max, 0.0, 1.0)
+    if output_dtype == "float32":
+        return normalized.astype(np.float32)
+    if output_dtype == "uint8":
+        return np.rint(normalized * 255.0).astype(np.uint8)
+    raise ValueError(f"Unsupported output dtype: {output_dtype}")
 
 
 def pseudo_rgb(cube: np.ndarray, bands: tuple[int, int, int]) -> np.ndarray:
@@ -62,7 +70,7 @@ def _convert_one(task: tuple[str, str]) -> str:
     assert _ZIP is not None
     raw = np.array(Image.open(io.BytesIO(_ZIP.read(image_name))))
     raw_cube = x2cube(raw)
-    cube = scale_cube(raw_cube, _CLIP_MAX)
+    cube = scale_cube(raw_cube, _CLIP_MAX, _OUTPUT_DTYPE)
     if _PSEUDO_BANDS is not None:
         cube = np.concatenate([cube, pseudo_rgb(raw_cube, _PSEUDO_BANDS)], axis=2)
     out_path = Path(out_name)
@@ -78,6 +86,7 @@ def convert_tasks(
     tasks: list[tuple[str, str]],
     clip_max: float,
     pseudo_bands: tuple[int, int, int] | None,
+    output_dtype: str,
     workers: int,
     label: str,
 ) -> None:
@@ -88,7 +97,7 @@ def convert_tasks(
     with ProcessPoolExecutor(
         max_workers=workers,
         initializer=_init_worker,
-        initargs=(str(zip_path), clip_max, pseudo_bands),
+        initargs=(str(zip_path), clip_max, pseudo_bands, output_dtype),
     ) as ex:
         for i, _ in enumerate(ex.map(_convert_one, pending, chunksize=8), start=1):
             if i % 100 == 0 or i == len(pending):
@@ -107,19 +116,49 @@ def main() -> None:
     parser.add_argument("--out", type=Path, default=Path("prepared/hsi16_clip320"))
     parser.add_argument("--clip-max", type=float, default=320.0)
     parser.add_argument("--pseudo-bands", type=int, nargs=3, default=None)
+    parser.add_argument("--output-dtype", choices=("uint8", "float32"), default="uint8")
     parser.add_argument("--workers", type=int, default=12)
     args = parser.parse_args()
     pseudo_bands = tuple(args.pseudo_bands) if args.pseudo_bands is not None else None
     channels = 16 + (3 if pseudo_bands is not None else 0)
 
+    preprocess_config = {
+        "clip_max": args.clip_max,
+        "pseudo_bands": pseudo_bands,
+        "channels": channels,
+        "output_dtype": args.output_dtype,
+        "scaling": "clip(raw/clip_max,0,1)",
+    }
+    signature = hashlib.sha256(
+        json.dumps(preprocess_config, sort_keys=True, separators=(",", ":")).encode()
+    ).hexdigest()
+
+    existing_meta = args.out / "meta.json"
+    if existing_meta.exists():
+        old = json.loads(existing_meta.read_text())
+        old_signature = old.get("preprocess_signature")
+        if old_signature != signature:
+            raise RuntimeError(
+                f"Preprocessing cache mismatch in {args.out}: existing signature={old_signature!r}, "
+                f"requested={signature}. Use a new --out directory for each preprocessing configuration."
+            )
+    elif args.out.exists() and any((args.out / "images").glob("**/*")):
+        raise RuntimeError(
+            f"Legacy cache found in {args.out} without a preprocessing signature. "
+            "Use a fresh --out directory so parameter changes cannot silently reuse stale files."
+        )
+
     split = json.loads((args.split_source / "split.json").read_text())
     train_ids = [str(x) for x in split["train"]]
     val_ids = [str(x) for x in split["val"]]
+    holdout_ids = [str(x) for x in split.get("holdout", [])]
 
     args.out.mkdir(parents=True, exist_ok=True)
     (args.out / "split.json").write_text(json.dumps(split, indent=2))
 
-    for split_name in ("train", "val"):
+    for split_name in ("train", "val", "holdout"):
+        if split_name == "holdout" and not holdout_ids:
+            continue
         src = args.split_source / "labels" / split_name
         dst = args.out / "labels" / split_name
         if dst.exists():
@@ -142,14 +181,31 @@ def main() -> None:
         (f"data_train/data_train/VIS/{image_id}.png", str(args.out / "images/val" / f"{image_id}.tiff"))
         for image_id in val_ids
     ]
+    holdout_tasks = [
+        (
+            f"data_train/data_train/VIS/{image_id}.png",
+            str(args.out / "images/holdout" / f"{image_id}.tiff"),
+        )
+        for image_id in holdout_ids
+    ]
     test_tasks = [
         (name, str(args.out / "images/test" / f"{Path(name).stem}.tiff"))
         for name in test_names
     ]
 
-    convert_tasks(args.zip_path, train_tasks, args.clip_max, pseudo_bands, args.workers, "train")
-    convert_tasks(args.zip_path, val_tasks, args.clip_max, pseudo_bands, args.workers, "val")
-    convert_tasks(args.zip_path, test_tasks, args.clip_max, pseudo_bands, args.workers, "test")
+    convert_tasks(args.zip_path, train_tasks, args.clip_max, pseudo_bands, args.output_dtype, args.workers, "train")
+    convert_tasks(args.zip_path, val_tasks, args.clip_max, pseudo_bands, args.output_dtype, args.workers, "val")
+    if holdout_tasks:
+        convert_tasks(
+            args.zip_path,
+            holdout_tasks,
+            args.clip_max,
+            pseudo_bands,
+            args.output_dtype,
+            args.workers,
+            "holdout",
+        )
+    convert_tasks(args.zip_path, test_tasks, args.clip_max, pseudo_bands, args.output_dtype, args.workers, "test")
 
     abs_out = args.out.resolve()
     yaml_lines = [
@@ -164,11 +220,11 @@ def main() -> None:
     (args.out / "data.yaml").write_text("\n".join(yaml_lines) + "\n")
 
     meta = {
-        "clip_max": args.clip_max,
-        "channels": channels,
-        "pseudo_bands": pseudo_bands,
+        **preprocess_config,
+        "preprocess_signature": signature,
         "train_images": len(train_tasks),
         "val_images": len(val_tasks),
+        "holdout_images": len(holdout_tasks),
         "test_images": len(test_tasks),
         "source_split": str(args.split_source),
     }

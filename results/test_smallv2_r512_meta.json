@@ -1,0 +1,14 @@
+{
+  "checkpoint": "runs/rfdetr_phaseB_v2_384_weakaug_20ep/checkpoint_best_total.pth",
+  "dataset": "prepared/rfdetr_hsi16_strat_seed42_audited",
+  "split": "test",
+  "resolution": 512,
+  "channels": 16,
+  "classes": 18,
+  "confidence_threshold": 0.001,
+  "top_k": 300,
+  "fallback_empty": false,
+  "images": 1000,
+  "detections": 212787,
+  "fallback_images": 0
+}

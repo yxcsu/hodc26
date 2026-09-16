@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import argparse
 import csv
+import json
 from pathlib import Path
 from types import SimpleNamespace
 
@@ -10,9 +11,14 @@ from torch.utils.data import DataLoader
 
 from rfdetr import RFDETRSmall
 from rfdetr.datasets.coco import build_roboflow_from_coco
+from rfdetr.models.weights import interpolate_position_embeddings
 from rfdetr.utilities.tensors import make_collate_fn
 
-from train_rfdetr_multispectral import install_multispectral_patches
+from train_rfdetr_multispectral import (
+    configure_normalization,
+    install_identity_spectral_adapter,
+    install_multispectral_patches,
+)
 
 
 def main() -> None:
@@ -26,10 +32,36 @@ def main() -> None:
     parser.add_argument("--batch", type=int, default=8)
     parser.add_argument("--workers", type=int, default=4)
     parser.add_argument("--conf", type=float, default=0.001)
+    parser.add_argument("--top-k", type=int, default=300)
+    parser.add_argument(
+        "--split",
+        choices=("valid", "test"),
+        default="test",
+        help="Generate predictions for the RF-DETR valid/ or test/ directory.",
+    )
+    parser.add_argument(
+        "--fallback-empty",
+        action="store_true",
+        help="Force one low-confidence prediction for an otherwise empty image. Disabled by default for evaluator parity.",
+    )
+    parser.add_argument(
+        "--meta-out",
+        type=Path,
+        default=None,
+        help="Optional JSON sidecar with inference settings and counts.",
+    )
     parser.add_argument("--device", default="cuda:0")
+    parser.add_argument(
+        "--normalization",
+        choices=("imagenet-cyclic", "train-stats"),
+        default="imagenet-cyclic",
+    )
+    parser.add_argument("--normalization-stats", type=Path, default=None)
     args = parser.parse_args()
 
-    install_multispectral_patches()
+    configure_normalization(args.normalization, args.normalization_stats)
+    if args.channels != 3:
+        install_multispectral_patches()
 
     model = RFDETRSmall(
         num_channels=args.channels,
@@ -38,7 +70,15 @@ def main() -> None:
         pretrain_weights=None,
     )
     checkpoint = torch.load(args.checkpoint, map_location="cpu", weights_only=False)
-    state = checkpoint["model"]
+    state = checkpoint["model"].copy()
+    interpolate_position_embeddings(
+        state,
+        int(model.model_config.positional_encoding_size),
+    )
+    adapter_keys = [key for key in state if "spectral_adapter." in key]
+    if adapter_keys:
+        patch_embeddings = model.model.model.backbone[0].encoder.encoder.embeddings.patch_embeddings
+        install_identity_spectral_adapter(patch_embeddings, args.channels)
     incompatible = model.model.model.load_state_dict(state, strict=False)
     if incompatible.missing_keys or incompatible.unexpected_keys:
         raise RuntimeError(
@@ -63,7 +103,8 @@ def main() -> None:
         scale_jitter=False,
         augmentation_backend="cpu",
     )
-    dataset = build_roboflow_from_coco("test", cfg, args.resolution)
+    image_set = "val" if args.split == "valid" else "test"
+    dataset = build_roboflow_from_coco(image_set, cfg, args.resolution)
     block_size = int(model.model_config.patch_size) * int(model.model_config.num_windows)
     loader = DataLoader(
         dataset,
@@ -96,7 +137,10 @@ def main() -> None:
 
                 valid_class = (labels >= 0) & (labels < args.classes)
                 keep = torch.nonzero((scores > args.conf) & valid_class, as_tuple=False).flatten()
-                if keep.numel() == 0 and scores.numel() > 0:
+                if keep.numel() > args.top_k:
+                    local_order = torch.argsort(scores[keep], descending=True)[: args.top_k]
+                    keep = keep[local_order]
+                if args.fallback_empty and keep.numel() == 0 and scores.numel() > 0:
                     # Match the previous submission pipeline's guarantee that every
                     # image has at least one prediction, but keep it at its native
                     # low confidence so it cannot outrank stronger detections.
@@ -140,6 +184,31 @@ def main() -> None:
     print(f"detections={len(rows)}")
     print(f"fallback_images={missing_count}")
     print(f"submission={args.out}")
+
+    if args.meta_out is not None:
+        args.meta_out.parent.mkdir(parents=True, exist_ok=True)
+        args.meta_out.write_text(
+            json.dumps(
+                {
+                    "checkpoint": str(args.checkpoint),
+                    "dataset": str(args.dataset),
+                    "split": args.split,
+                    "resolution": args.resolution,
+                    "channels": args.channels,
+                    "classes": args.classes,
+                    "confidence_threshold": args.conf,
+                    "top_k": args.top_k,
+                    "fallback_empty": args.fallback_empty,
+                    "normalization": args.normalization,
+                    "normalization_stats": str(args.normalization_stats) if args.normalization_stats else None,
+                    "spectral_adapter": bool(adapter_keys),
+                    "images": image_count,
+                    "detections": len(rows),
+                    "fallback_images": missing_count,
+                },
+                indent=2,
+            )
+        )
 
 
 if __name__ == "__main__":

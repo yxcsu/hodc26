@@ -88,14 +88,19 @@ def build_split(source_root: Path, out_root: Path, source_split: str, rf_split: 
                 class_id_s, cx_s, cy_s, bw_s, bh_s = line.split()[:5]
                 class_id = int(class_id_s)
                 cx, cy, bw, bh = map(float, (cx_s, cy_s, bw_s, bh_s))
-                box_w = bw * w
-                box_h = bh * h
-                x = (cx - bw / 2.0) * w
-                y = (cy - bh / 2.0) * h
-                x = max(0.0, min(float(w), x))
-                y = max(0.0, min(float(h), y))
-                box_w = max(0.0, min(float(w) - x, box_w))
-                box_h = max(0.0, min(float(h) - y, box_h))
+                x1 = (cx - bw / 2.0) * w
+                y1 = (cy - bh / 2.0) * h
+                x2 = (cx + bw / 2.0) * w
+                y2 = (cy + bh / 2.0) * h
+                # Clip both endpoints, then recompute width/height. Clipping the
+                # origin while keeping the original width incorrectly enlarges a
+                # box that crosses the left/top boundary.
+                x1 = max(0.0, min(float(w), x1))
+                y1 = max(0.0, min(float(h), y1))
+                x2 = max(0.0, min(float(w), x2))
+                y2 = max(0.0, min(float(h), y2))
+                box_w = x2 - x1
+                box_h = y2 - y1
                 if box_w <= 0 or box_h <= 0:
                     continue
                 annotations.append(
@@ -103,7 +108,7 @@ def build_split(source_root: Path, out_root: Path, source_split: str, rf_split: 
                         "id": annotation_id,
                         "image_id": image_id,
                         "category_id": class_id,
-                        "bbox": [x, y, box_w, box_h],
+                        "bbox": [x1, y1, box_w, box_h],
                         "area": box_w * box_h,
                         "iscrowd": 0,
                     }

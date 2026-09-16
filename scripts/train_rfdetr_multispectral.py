@@ -2,9 +2,11 @@ from __future__ import annotations
 
 import argparse
 import copy
+import json
 import os
 from itertools import cycle
 from pathlib import Path
+from types import MethodType
 from typing import Any
 
 import cv2
@@ -26,6 +28,10 @@ from rfdetr.utilities.box_ops import box_xyxy_to_cxcywh  # noqa: E402
 
 IMAGENET_MEAN = (0.485, 0.456, 0.406)
 IMAGENET_STD = (0.229, 0.224, 0.225)
+_CUSTOM_MEAN: tuple[float, ...] | None = None
+_CUSTOM_STD: tuple[float, ...] | None = None
+_USE_SPECTRAL_ADAPTER = False
+_ADAPTER_ONLY = False
 
 
 def _decode_multispectral(self: Any, image_id: int):
@@ -76,7 +82,7 @@ def _convert_coco_detection(self: Any, image: Any, target: dict[str, Any]):
 
 
 class DynamicNormalize:
-    """ImageNet normalization repeated cyclically to the actual channel count."""
+    """Normalize multispectral tensors with cyclic ImageNet or fixed train-fold stats."""
 
     def __init__(self, mean=IMAGENET_MEAN, std=IMAGENET_STD) -> None:
         self.base_mean = tuple(mean)
@@ -84,8 +90,17 @@ class DynamicNormalize:
 
     def __call__(self, image: torch.Tensor, target: dict[str, Any] | None = None):
         channels = int(image.shape[-3])
-        mean = [v for _, v in zip(range(channels), cycle(self.base_mean))]
-        std = [v for _, v in zip(range(channels), cycle(self.base_std))]
+        if _CUSTOM_MEAN is not None and _CUSTOM_STD is not None:
+            if len(_CUSTOM_MEAN) != channels or len(_CUSTOM_STD) != channels:
+                raise ValueError(
+                    f"Custom normalization has {len(_CUSTOM_MEAN)} means/{len(_CUSTOM_STD)} stds "
+                    f"but image has {channels} channels"
+                )
+            mean = list(_CUSTOM_MEAN)
+            std = list(_CUSTOM_STD)
+        else:
+            mean = [v for _, v in zip(range(channels), cycle(self.base_mean))]
+            std = [v for _, v in zip(range(channels), cycle(self.base_std))]
         image = tvf.normalize(image, mean, std)
         if target is None:
             return image, None
@@ -97,6 +112,64 @@ class DynamicNormalize:
             )
         target["size"] = torch.as_tensor([h, w])
         return image, target
+
+
+def configure_normalization(mode: str, stats_path: Path | None) -> None:
+    global _CUSTOM_MEAN, _CUSTOM_STD
+    if mode == "imagenet-cyclic":
+        _CUSTOM_MEAN = None
+        _CUSTOM_STD = None
+        return
+    if mode != "train-stats":
+        raise ValueError(f"Unsupported normalization mode: {mode}")
+    if stats_path is None:
+        raise ValueError("--normalization train-stats requires --normalization-stats")
+    data = json.loads(stats_path.read_text())
+    mean = tuple(float(v) for v in data["mean"])
+    std = tuple(float(v) for v in data["std"])
+    if not mean or len(mean) != len(std) or any(v <= 0 for v in std):
+        raise ValueError(f"Invalid normalization stats in {stats_path}")
+    _CUSTOM_MEAN = mean
+    _CUSTOM_STD = std
+
+
+def install_identity_spectral_adapter(patch_embeddings: torch.nn.Module, channels: int) -> None:
+    """Insert a registered identity 1x1 Conv before DINOv2 patch projection."""
+    if hasattr(patch_embeddings, "spectral_adapter"):
+        return
+    adapter = torch.nn.Conv2d(channels, channels, kernel_size=1, bias=True)
+    with torch.no_grad():
+        adapter.weight.zero_()
+        eye = torch.eye(channels, dtype=adapter.weight.dtype, device=adapter.weight.device)
+        adapter.weight[:, :, 0, 0].copy_(eye)
+        adapter.bias.zero_()
+    patch_embeddings.add_module("spectral_adapter", adapter)
+
+    def forward_with_adapter(self: Any, pixel_values: torch.Tensor) -> torch.Tensor:
+        num_channels = pixel_values.shape[1]
+        if num_channels != self.num_channels:
+            raise ValueError(
+                "Make sure that the channel dimension of the pixel values match with the one set in the configuration."
+                f" Expected {self.num_channels} but got {num_channels}."
+            )
+        pixel_values = self.spectral_adapter(pixel_values)
+        return self.projection(pixel_values).flatten(2).transpose(1, 2)
+
+    patch_embeddings.forward = MethodType(forward_with_adapter, patch_embeddings)
+
+
+def verify_identity_adapter(patch_embeddings: torch.nn.Module, channels: int) -> None:
+    """Assert the identity adapter preserves patch-embedding output at initialization."""
+    device = patch_embeddings.projection.weight.device
+    dtype = patch_embeddings.projection.weight.dtype
+    x = torch.rand(1, channels, 64, 64, device=device, dtype=dtype)
+    with torch.no_grad():
+        expected = patch_embeddings.projection(x).flatten(2).transpose(1, 2)
+        actual = patch_embeddings(x)
+    max_diff = float((expected - actual).abs().max().item())
+    print(f"spectral_adapter_identity_maxdiff={max_diff:.9g}", flush=True)
+    if max_diff > 1e-6:
+        raise RuntimeError(f"Identity spectral adapter changed initial output: max_diff={max_diff}")
 
 
 class SpectralAugment:
@@ -192,6 +265,7 @@ def install_multispectral_patches() -> None:
     def patched_init(self: Any, model_config: Any, train_config: Any) -> None:
         target_channels = int(getattr(model_config, "num_channels", 3))
         deferred_state = None
+        adapter_in_checkpoint = False
         init_config = model_config
 
         # RF-DETR v1.10.1 can adapt a 3-channel checkpoint to N channels, but it
@@ -210,6 +284,7 @@ def install_multispectral_patches() -> None:
                     checkpoint_channels = int(state[projection_key].shape[1])
                     if checkpoint_channels == target_channels:
                         deferred_state = state
+                        adapter_in_checkpoint = any("spectral_adapter." in key for key in state)
                         if hasattr(model_config, "model_copy"):
                             init_config = model_config.model_copy(update={"pretrain_weights": None})
                         else:
@@ -232,6 +307,9 @@ def install_multispectral_patches() -> None:
             patch_embeddings.projection = new_projection
         patch_embeddings.num_channels = target_channels
 
+        if _USE_SPECTRAL_ADAPTER:
+            install_identity_spectral_adapter(patch_embeddings, target_channels)
+
         if deferred_state is not None:
             from rfdetr.models.weights import interpolate_position_embeddings
 
@@ -240,12 +318,27 @@ def install_multispectral_patches() -> None:
                 int(getattr(model_config, "positional_encoding_size")),
             )
             incompatible = self.model.load_state_dict(deferred_state, strict=False)
-            if incompatible.missing_keys or incompatible.unexpected_keys:
+            allowed_missing = {
+                "backbone.0.encoder.encoder.embeddings.patch_embeddings.spectral_adapter.weight",
+                "backbone.0.encoder.encoder.embeddings.patch_embeddings.spectral_adapter.bias",
+            }
+            missing = [key for key in incompatible.missing_keys if key not in allowed_missing]
+            if missing or incompatible.unexpected_keys:
                 raise RuntimeError(
                     "Deferred multispectral checkpoint load was incomplete: "
-                    f"missing={incompatible.missing_keys[:10]} "
+                    f"missing={missing[:10]} "
                     f"unexpected={incompatible.unexpected_keys[:10]}"
                 )
+
+        if _USE_SPECTRAL_ADAPTER and not adapter_in_checkpoint:
+            verify_identity_adapter(patch_embeddings, target_channels)
+            if _ADAPTER_ONLY:
+                for parameter in self.model.parameters():
+                    parameter.requires_grad = False
+                for parameter in patch_embeddings.spectral_adapter.parameters():
+                    parameter.requires_grad = True
+                trainable = sum(p.numel() for p in self.model.parameters() if p.requires_grad)
+                print(f"adapter_only_trainable_params={trainable}", flush=True)
 
     cls.__init__ = patched_init
     cls._hotc_multispectral_patched = True
@@ -260,6 +353,7 @@ def main() -> None:
     parser.add_argument("--grad-accum", type=int, default=8)
     parser.add_argument("--resolution", type=int, default=512)
     parser.add_argument("--workers", type=int, default=4)
+    parser.add_argument("--device", default="cuda:0")
     parser.add_argument("--channels", type=int, default=16, choices=(3, 16))
     parser.add_argument(
         "--pretrain",
@@ -278,8 +372,25 @@ def main() -> None:
     parser.add_argument("--spectral-gain", type=float, nargs=2, metavar=("MIN", "MAX"), default=None)
     parser.add_argument("--spectral-tilt", type=float, default=0.0)
     parser.add_argument("--spectral-noise", type=float, default=0.0)
+    parser.add_argument(
+        "--normalization",
+        choices=("imagenet-cyclic", "train-stats"),
+        default="imagenet-cyclic",
+    )
+    parser.add_argument("--normalization-stats", type=Path, default=None)
+    parser.add_argument("--spectral-adapter", action="store_true")
+    parser.add_argument(
+        "--adapter-only",
+        action="store_true",
+        help="Freeze the detector and train only the identity-initialized 1x1 spectral adapter.",
+    )
     parser.add_argument("--smoke-dataset-only", action="store_true")
     args = parser.parse_args()
+
+    global _USE_SPECTRAL_ADAPTER, _ADAPTER_ONLY
+    _USE_SPECTRAL_ADAPTER = bool(args.spectral_adapter or args.adapter_only)
+    _ADAPTER_ONLY = bool(args.adapter_only)
+    configure_normalization(args.normalization, args.normalization_stats)
 
     if args.channels != 3:
         install_multispectral_patches()
@@ -351,6 +462,11 @@ def main() -> None:
         return
 
     args.output.mkdir(parents=True, exist_ok=True)
+    print(
+        f"optimization batch_size={args.batch} grad_accum_steps={args.grad_accum} "
+        f"devices=1 effective_batch={args.batch * args.grad_accum}",
+        flush=True,
+    )
     model.train(
         dataset_dir=str(args.dataset),
         output_dir=str(args.output),
@@ -369,6 +485,7 @@ def main() -> None:
         multi_scale=not args.fixed_scale,
         expanded_scales=not args.fixed_scale,
         checkpoint_interval=1,
+        device=args.device,
     )
 
 
