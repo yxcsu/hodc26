@@ -1,0 +1,8 @@
+experiment,model,input,epochs,resolution,batch,local_val_map50_95,holdout_map50_95,kaggle_public_lb,submission_ref,notes
+y11n_pseudo5813,YOLO11n,pseudo_rgb_5_8_13,25,640,,0.62767,,0.53102,56169443,pseudo-RGB baseline
+y11s_pseudo5813,YOLO11s,pseudo_rgb_5_8_13,25,640,32,0.64575,,0.53704,56170628,pseudo-RGB stronger baseline
+y11s_hsi16,YOLO11s,native_hsi16,22,640,32,0.64114,,0.59086,56170727,current best Public LB
+y11s_hsi16_cont25,YOLO11s,native_hsi16,25,640,32,0.64525,,0.58259,56209504,continuous 25-epoch run
+rfdetr_phaseA,RF-DETR Small,pseudo_rgb_5_8_13,50,512,16,0.6153656840,0.6015344858,,,best zero-based epoch 25
+rfdetr_phaseB,RF-DETR Small,native_hsi16,50,512,16,0.6226434708,0.6124367714,,,best zero-based epoch 7
+rfdetr_smallv2,RF-DETR Small,native_hsi16,20,384,16,0.6862885356,0.6802958846,0.59025,56279353,fixed scale + weak spectral augmentation; current best local

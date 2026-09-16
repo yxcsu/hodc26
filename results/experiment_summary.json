@@ -1,0 +1,133 @@
+{
+  "updated": "2026-09-16",
+  "competition": "hyperspectral-object-detection-challenge-2026",
+  "dataset": {
+    "train_images": 3000,
+    "test_images": 1000,
+    "num_classes": 18,
+    "raw_annotation_objects": 10107,
+    "final_split": {
+      "train": 2400,
+      "validation": 300,
+      "holdout": 300,
+      "seed": 42
+    },
+    "annotation_audit": {
+      "degenerate_boxes_removed": 41,
+      "severe_degenerate_image_ids": [298, 423, 953, 1590, 1974, 3294, 4763],
+      "out_of_bounds_image_ids": [1989, 3093]
+    }
+  },
+  "best_public_lb": {
+    "score": 0.59086,
+    "experiment": "y11s_hsi16",
+    "submission_ref": 56170727
+  },
+  "best_local": {
+    "experiment": "rfdetr_smallv2",
+    "validation_map50_95": 0.6862885355949402,
+    "holdout_map50_95": 0.6802958846092224,
+    "public_lb": 0.59025,
+    "submission_ref": 56279353
+  },
+  "experiments": [
+    {
+      "name": "y11n_pseudo5813",
+      "model": "YOLO11n",
+      "input": "pseudo_rgb_5_8_13",
+      "local_val_map50_95": 0.62767,
+      "public_lb": 0.53102,
+      "submission_ref": 56169443
+    },
+    {
+      "name": "y11s_pseudo5813",
+      "model": "YOLO11s",
+      "input": "pseudo_rgb_5_8_13",
+      "epochs": 25,
+      "resolution": 640,
+      "batch": 32,
+      "local_val_map50_95": 0.64575,
+      "public_lb": 0.53704,
+      "submission_ref": 56170628
+    },
+    {
+      "name": "y11s_hsi16",
+      "model": "YOLO11s",
+      "input": "native_hsi16",
+      "epochs": 22,
+      "resolution": 640,
+      "batch": 32,
+      "local_val_map50_95": 0.64114,
+      "public_lb": 0.59086,
+      "submission_ref": 56170727
+    },
+    {
+      "name": "y11s_hsi16_cont25",
+      "model": "YOLO11s",
+      "input": "native_hsi16",
+      "epochs": 25,
+      "resolution": 640,
+      "batch": 32,
+      "local_val_map50_95": 0.64525,
+      "public_lb": 0.58259,
+      "submission_ref": 56209504
+    },
+    {
+      "name": "rfdetr_phaseA",
+      "model": "RF-DETR Small",
+      "input": "pseudo_rgb_5_8_13",
+      "epochs": 50,
+      "resolution": 512,
+      "multi_scale": true,
+      "batch": 16,
+      "lr": 0.0001,
+      "lr_encoder": 0.00015,
+      "best_zero_based_epoch": 25,
+      "local_val_map50_95": 0.6153656840324402,
+      "holdout_map50_95": 0.6015344858169556
+    },
+    {
+      "name": "rfdetr_phaseB",
+      "model": "RF-DETR Small",
+      "input": "native_hsi16",
+      "epochs": 50,
+      "resolution": 512,
+      "multi_scale": true,
+      "batch": 16,
+      "lr": 0.00005,
+      "lr_encoder": 0.000075,
+      "best_zero_based_epoch": 7,
+      "local_val_map50_95": 0.6226434707641602,
+      "holdout_map50_95": 0.6124367713928223
+    },
+    {
+      "name": "rfdetr_smallv2",
+      "model": "RF-DETR Small",
+      "input": "native_hsi16",
+      "epochs": 20,
+      "resolution_short_side": 384,
+      "preserve_aspect_ratio": true,
+      "multi_scale": false,
+      "batch": 16,
+      "lr": 0.00003,
+      "lr_encoder": 0.000015,
+      "queries": 300,
+      "spectral_augmentation": {
+        "global_gain": [0.95, 1.05],
+        "spectral_tilt": 0.03,
+        "gaussian_noise_sigma": 0.0002
+      },
+      "best_zero_based_epoch": 13,
+      "local_val_map50_95": 0.6862885355949402,
+      "holdout_map50_95": 0.6802958846092224,
+      "inference": {
+        "confidence": 0.001,
+        "extra_nms": false,
+        "test_detections": 231237
+      },
+      "public_lb": 0.59025,
+      "submission_ref": 56279353
+    }
+  ],
+  "primary_open_problem": "Large local-to-Public-LB gap, especially for RF-DETR Small-v2; audit split grouping, exact metric/inference behavior, spectral train-test shift, and model complementarity before additional leaderboard probing."
+}

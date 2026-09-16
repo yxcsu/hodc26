@@ -17,7 +17,16 @@ Best Small-v2 local results from the current run:
 - validation mAP50-95: `0.68629`;
 - holdout mAP50-95: `0.68030`.
 
-The corresponding Kaggle submission is generated from the RF-DETR checkpoint with 300 DETR queries, confidence threshold `0.001`, and no extra NMS.
+The corresponding Kaggle submission is generated from the RF-DETR checkpoint with 300 DETR queries, confidence threshold `0.001`, and no extra NMS. Its Public LB score is `0.59025`. The current best Public LB in this repository remains `0.59086` from YOLO11s native 16-band HSI.
+
+## Experiment documentation
+
+For external/AI review, start with:
+
+- [`docs/EXPERIMENT_REPORT.md`](docs/EXPERIMENT_REPORT.md) — dataset, preprocessing, model variants, exact local/Kaggle results, failures, and reproducibility notes.
+- [`docs/AI_REVIEW_BRIEF.md`](docs/AI_REVIEW_BRIEF.md) — compact problem statement and the highest-priority questions for proposing new methods.
+- [`results/experiment_summary.csv`](results/experiment_summary.csv) — machine-readable experiment table.
+- [`results/experiment_summary.json`](results/experiment_summary.json) — machine-readable dataset/method/result metadata.
 
 ## Main scripts
 
