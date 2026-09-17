@@ -12,7 +12,7 @@ from torch.utils.data import DataLoader
 from rfdetr import RFDETRSmall
 from rfdetr.datasets.coco import build_roboflow_from_coco
 from rfdetr.models.weights import interpolate_position_embeddings
-from rfdetr.utilities.tensors import make_collate_fn
+from rfdetr.utilities.tensors import NestedTensor, make_collate_fn
 
 from train_rfdetr_multispectral import (
     configure_normalization,
@@ -33,6 +33,11 @@ def main() -> None:
     parser.add_argument("--workers", type=int, default=4)
     parser.add_argument("--conf", type=float, default=0.001)
     parser.add_argument("--top-k", type=int, default=300)
+    parser.add_argument(
+        "--hflip",
+        action="store_true",
+        help="Run inference on a horizontally flipped view and map boxes back to original coordinates.",
+    )
     parser.add_argument(
         "--split",
         choices=("valid", "test"),
@@ -123,10 +128,44 @@ def main() -> None:
     with torch.inference_mode():
         for batch_idx, (samples, targets) in enumerate(loader, start=1):
             samples = samples.to(device)
+            if args.hflip:
+                # Flip each image only inside its valid (unpadded) spatial extent.
+                # Flipping the entire padded batch width moves narrower images into
+                # the right-side padding and breaks the geometry used when mapping
+                # boxes back to original coordinates.
+                flipped = samples.tensors.clone()
+                if samples.mask is None:
+                    flipped = torch.flip(flipped, dims=[-1])
+                else:
+                    for i in range(flipped.shape[0]):
+                        valid = ~samples.mask[i]
+                        valid_rows = torch.nonzero(valid.any(dim=1), as_tuple=False).flatten()
+                        valid_cols = torch.nonzero(valid.any(dim=0), as_tuple=False).flatten()
+                        if valid_rows.numel() == 0 or valid_cols.numel() == 0:
+                            continue
+                        h = int(valid_rows[-1].item()) + 1
+                        w = int(valid_cols[-1].item()) + 1
+                        flipped[i, :, :h, :w] = torch.flip(
+                            samples.tensors[i, :, :h, :w], dims=[-1]
+                        )
+                samples = NestedTensor(
+                    flipped,
+                    samples.mask,
+                    no_padding=samples.no_padding,
+                )
             predictions = model.model.model(samples)
             target_sizes = torch.stack([target["orig_size"] for target in targets]).to(device)
             # Keep raw DETR predictions. We intentionally do not apply an extra NMS.
             results = model.model.postprocess(predictions, target_sizes=target_sizes, score_threshold=0.0)
+
+            if args.hflip:
+                for result, target in zip(results, targets):
+                    width = float(target["orig_size"][1].item())
+                    boxes = result["boxes"]
+                    x1 = boxes[:, 0].clone()
+                    x2 = boxes[:, 2].clone()
+                    boxes[:, 0] = width - x2
+                    boxes[:, 2] = width - x1
 
             for result, target in zip(results, targets):
                 image_count += 1
@@ -198,6 +237,7 @@ def main() -> None:
                     "classes": args.classes,
                     "confidence_threshold": args.conf,
                     "top_k": args.top_k,
+                    "hflip": args.hflip,
                     "fallback_empty": args.fallback_empty,
                     "normalization": args.normalization,
                     "normalization_stats": str(args.normalization_stats) if args.normalization_stats else None,

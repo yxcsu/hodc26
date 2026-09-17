@@ -43,7 +43,7 @@ def load_predictions(path: Path, conf: float, top_k: int | None) -> list[dict]:
     return predictions
 
 
-def evaluate(gt_path: Path, predictions: list[dict], max_dets: int) -> dict[str, float]:
+def evaluate(gt_path: Path, predictions: list[dict], max_dets: int) -> dict[str, object]:
     coco_gt = COCO(str(gt_path))
     if predictions:
         coco_dt = coco_gt.loadRes(predictions)
@@ -81,12 +81,28 @@ def evaluate(gt_path: Path, predictions: list[dict], max_dets: int) -> dict[str,
     iou_thrs = evaluator.params.iouThrs
     iou50_idx = int(np.argmin(np.abs(iou_thrs - 0.50)))
     iou75_idx = int(np.argmin(np.abs(iou_thrs - 0.75)))
+    per_class: dict[str, float] = {}
+    for k, category_id in enumerate(evaluator.params.catIds):
+        category = coco_gt.cats.get(category_id, {})
+        name = str(category.get("name", category_id))
+        per_class[name] = mean_valid(all_precision[:, :, k])
+
+    area_ap: dict[str, float] = {}
+    area_ar: dict[str, float] = {}
+    for label in evaluator.params.areaRngLbl:
+        idx = evaluator.params.areaRngLbl.index(label)
+        area_ap[label] = mean_valid(precision[:, :, :, idx, max_det_idx])
+        area_ar[label] = mean_valid(recall[:, :, idx, max_det_idx])
+
     return {
         "mAP_50_95": mean_valid(all_precision),
         "mAP_50": mean_valid(all_precision[iou50_idx]),
         "mAP_75": mean_valid(all_precision[iou75_idx]),
         "mAR": mean_valid(all_recall),
         "detections": float(len(predictions)),
+        "per_class_AP_50_95": per_class,
+        "area_AP_50_95": area_ap,
+        "area_AR": area_ar,
     }
 
 

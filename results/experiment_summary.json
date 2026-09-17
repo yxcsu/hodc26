@@ -1,5 +1,5 @@
 {
-  "updated": "2026-09-16",
+  "updated": "2026-09-17",
   "competition": "hyperspectral-object-detection-challenge-2026",
   "dataset": {
     "train_images": 3000,
@@ -19,16 +19,16 @@
     }
   },
   "best_public_lb": {
-    "score": 0.59086,
-    "experiment": "y11s_hsi16",
-    "submission_ref": 56170727
+    "score": 0.60617,
+    "experiment": "rfdetr_smallv2_tta",
+    "submission_ref": 56281009
   },
   "best_local": {
-    "experiment": "rfdetr_smallv2",
-    "validation_map50_95": 0.6862885355949402,
-    "holdout_map50_95": 0.6802958846092224,
-    "public_lb": 0.59025,
-    "submission_ref": 56279353
+    "experiment": "rfdetr_smallv2_tta",
+    "validation_map50_95": 0.692842109055644,
+    "holdout_map50_95": 0.6900738337207937,
+    "public_lb": 0.60617,
+    "submission_ref": 56281009
   },
   "experiments": [
     {
@@ -127,7 +127,158 @@
       },
       "public_lb": 0.59025,
       "submission_ref": 56279353
+    },
+    {
+      "name": "rfdetr_smallv2_tta",
+      "model": "RF-DETR Small",
+      "input": "native_hsi16",
+      "single_model_tta": true,
+      "short_side_resolutions": [384, 448, 512],
+      "fusion": {
+        "method": "class-wise WBF",
+        "iou_threshold": 0.7
+      },
+      "local_val_map50_95": 0.692842109055644,
+      "holdout_map50_95": 0.6900738337207937,
+      "public_lb": 0.60617,
+      "submission_ref": 56281009
+    },
+    {
+      "name": "y11s_hsi16_group42",
+      "model": "YOLO11s",
+      "input": "native_hsi16",
+      "epochs": 25,
+      "resolution": 640,
+      "batch": 32,
+      "group_aware": true,
+      "group_seed": 42,
+      "local_val_map50_95": 0.7023,
+      "holdout_map50_95": 0.6914186488978181
+    },
+    {
+      "name": "y11s_hsi16_group2026",
+      "model": "YOLO11s",
+      "input": "native_hsi16",
+      "epochs": 25,
+      "resolution": 640,
+      "batch": 32,
+      "group_aware": true,
+      "group_seed": 2026,
+      "local_val_map50_95": 0.67923,
+      "holdout_map50_95": 0.6855692726620647
+    },
+    {
+      "name": "rfdetr_group42_phaseA_r672",
+      "model": "RF-DETR Small",
+      "input": "pseudo_rgb_5_8_13",
+      "group_aware": true,
+      "group_seed": 42,
+      "resolution": 672,
+      "local_val_map50_95": 0.5952914232220863,
+      "holdout_map50_95": 0.5799539779816874
+    },
+    {
+      "name": "rfdetr_group42_phaseB_r672",
+      "model": "RF-DETR Small",
+      "input": "native_hsi16",
+      "group_aware": true,
+      "group_seed": 42,
+      "resolution": 672,
+      "local_val_map50_95": 0.6081848323684964,
+      "holdout_map50_95": 0.5921440657972274
+    },
+    {
+      "name": "rfdetr_group2026_phaseA_r672",
+      "model": "RF-DETR Small",
+      "input": "pseudo_rgb_5_8_13",
+      "group_aware": true,
+      "group_seed": 2026,
+      "resolution": 672,
+      "local_val_map50_95": 0.573321,
+      "holdout_map50_95": 0.591064
+    },
+    {
+      "name": "rfdetr_group2026_phaseB_r672",
+      "model": "RF-DETR Small",
+      "input": "native_hsi16",
+      "group_aware": true,
+      "group_seed": 2026,
+      "resolution": 672,
+      "local_val_map50_95": 0.557230647594494,
+      "holdout_map50_95": 0.5776405698634675
+    },
+    {
+      "name": "rfdetr_group42_float32_cyclic",
+      "model": "RF-DETR Small",
+      "input": "native_hsi16_float32",
+      "normalization": "imagenet-cyclic",
+      "resolution": 672,
+      "local_val_map50_95": 0.5865939743429803,
+      "holdout_map50_95": 0.5704315334814504,
+      "conclusion": "worse than uint8 baseline"
+    },
+    {
+      "name": "rfdetr_group42_float32_trainstats",
+      "model": "RF-DETR Small",
+      "input": "native_hsi16_float32",
+      "normalization": "train-fold per-band stats",
+      "resolution": 672,
+      "local_val_map50_95": 0.5863384192280399,
+      "holdout_map50_95": 0.5787117873076439,
+      "conclusion": "partially recovers float32 normalization mismatch but remains below uint8 baseline"
+    },
+    {
+      "name": "rfdetr_group42_v2_control",
+      "model": "RF-DETR Small",
+      "input": "native_hsi16",
+      "resolution": 384,
+      "multi_scale": false,
+      "spectral_augmentation": {
+        "global_gain": [0.95, 1.05],
+        "spectral_tilt": 0.03,
+        "gaussian_noise_sigma": 0.0002
+      },
+      "local_val_map50_95": 0.688847,
+      "holdout_map50_95": 0.672842
+    },
+    {
+      "name": "rfdetr_group42_v2_gain_only",
+      "model": "RF-DETR Small",
+      "input": "native_hsi16",
+      "resolution": 384,
+      "multi_scale": false,
+      "spectral_augmentation": {
+        "global_gain": [0.95, 1.05],
+        "spectral_tilt": 0.0,
+        "gaussian_noise_sigma": 0.0
+      },
+      "local_val_map50_95": 0.690437,
+      "holdout_map50_95": 0.674656,
+      "conclusion": "slightly better than gain+tilt+noise but below the predeclared +0.005 submission threshold"
+    },
+    {
+      "name": "rfdetr_group42_v2_adapter",
+      "model": "RF-DETR Small",
+      "input": "native_hsi16",
+      "resolution": 384,
+      "spectral_adapter": "identity-initialized 1x1 Conv 16->16",
+      "adapter_trainable_params": 272,
+      "training": "2 epochs adapter-only + 8 epochs joint fine-tune",
+      "local_val_map50_95": 0.683614,
+      "holdout_map50_95": 0.669159,
+      "conclusion": "worse than no-adapter gain-only control"
     }
   ],
-  "primary_open_problem": "Large local-to-Public-LB gap, especially for RF-DETR Small-v2; audit split grouping, exact metric/inference behavior, spectral train-test shift, and model complementarity before additional leaderboard probing."
+  "completed_findings": {
+    "submission_path": "CSV-path evaluation matches framework evaluation to about 0.0005 mAP",
+    "group_validation": "content-group splits do not collapse YOLO performance; RF-DETR is much more split-sensitive",
+    "tta": "384+448+512 equal-weight class-wise WBF IoU 0.7 is the only new method verified to materially improve Public LB",
+    "float32": "plain float32 preprocessing is worse than the current uint8 pipeline",
+    "train_stats_normalization": "helps float32 relative to cyclic ImageNet statistics but remains below uint8 baseline",
+    "hflip": "no consistent >=0.005 gain",
+    "weighted_wbf": "equal 1:1:1 scale weights remain best",
+    "gain_only": "slight ~0.002 local improvement, below submission threshold",
+    "spectral_adapter": "simple identity full-rank 1x1 adapter is worse than the no-adapter control"
+  },
+  "primary_open_problem": "The remaining opportunity is not confidence tuning or simple preprocessing. Prioritize small-object localization and recurrent weak classes (stone_block, people, car, unstable e-bike), detector complementarity, and more structured spectral modeling while retaining the externally verified three-scale TTA."
 }

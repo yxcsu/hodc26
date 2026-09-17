@@ -1,8 +1,20 @@
 experiment,model,input,epochs,resolution,batch,local_val_map50_95,holdout_map50_95,kaggle_public_lb,submission_ref,notes
 y11n_pseudo5813,YOLO11n,pseudo_rgb_5_8_13,25,640,,0.62767,,0.53102,56169443,pseudo-RGB baseline
 y11s_pseudo5813,YOLO11s,pseudo_rgb_5_8_13,25,640,32,0.64575,,0.53704,56170628,pseudo-RGB stronger baseline
-y11s_hsi16,YOLO11s,native_hsi16,22,640,32,0.64114,,0.59086,56170727,current best Public LB
+y11s_hsi16,YOLO11s,native_hsi16,22,640,32,0.64114,,0.59086,56170727,former best Public LB
 y11s_hsi16_cont25,YOLO11s,native_hsi16,25,640,32,0.64525,,0.58259,56209504,continuous 25-epoch run
 rfdetr_phaseA,RF-DETR Small,pseudo_rgb_5_8_13,50,512,16,0.6153656840,0.6015344858,,,best zero-based epoch 25
 rfdetr_phaseB,RF-DETR Small,native_hsi16,50,512,16,0.6226434708,0.6124367714,,,best zero-based epoch 7
-rfdetr_smallv2,RF-DETR Small,native_hsi16,20,384,16,0.6862885356,0.6802958846,0.59025,56279353,fixed scale + weak spectral augmentation; current best local
+rfdetr_smallv2,RF-DETR Small,native_hsi16,20,384,16,0.6862885356,0.6802958846,0.59025,56279353,fixed scale + weak spectral augmentation
+rfdetr_smallv2_tta,RF-DETR Small,native_hsi16,20,384+448+512,16,0.6928421091,0.6900738337,0.60617,56281009,single-model multi-scale TTA + class-wise WBF IoU 0.7; current best Public LB
+y11s_hsi16_group42,YOLO11s,native_hsi16,25,640,32,0.70230,0.6914186489,,,content-group split seed42; zero group overlap
+y11s_hsi16_group2026,YOLO11s,native_hsi16,25,640,32,0.67923,0.6855692727,,,content-group split seed2026; zero group overlap
+rfdetr_group42_phaseA_r672,RF-DETR Small,pseudo_rgb_5_8_13,30,672,16,0.5952914232,0.5799539780,,,group-aware seed42; re-evaluated best checkpoint at short-side 672
+rfdetr_group42_phaseB_r672,RF-DETR Small,native_hsi16,20,672,16,0.6081848324,0.5921440658,,,group-aware seed42; best Phase B checkpoint re-evaluated at 672
+rfdetr_group2026_phaseA_r672,RF-DETR Small,pseudo_rgb_5_8_13,12,672,16,0.573321,0.591064,,,group-aware seed2026; Phase A early-stopped after plateau
+rfdetr_group2026_phaseB_r672,RF-DETR Small,native_hsi16,12,672,16,0.5572306476,0.5776405699,,,group-aware seed2026; best Phase B checkpoint re-evaluated at 672
+rfdetr_group42_float32_cyclic,RF-DETR Small,native_hsi16_float32,10,672,16,0.5865939743,0.5704315335,,,float32 clip(raw/320) with cyclic ImageNet normalization; worse than uint8 baseline
+rfdetr_group42_float32_trainstats,RF-DETR Small,native_hsi16_float32,10,672,16,0.5863384192,0.5787117873,,,float32 with train-fold per-band mean/std; partially recovers but still below uint8 baseline
+rfdetr_group42_v2_control,RF-DETR Small,native_hsi16,10,384,16,0.688847,0.672842,,,fixed 384; gain 0.95-1.05 + tilt 0.03 + noise 0.0002
+rfdetr_group42_v2_gain_only,RF-DETR Small,native_hsi16,10,384,16,0.690437,0.674656,,,fixed 384; gain only; +0.0016/+0.0018 over control, below +0.005 submission threshold
+rfdetr_group42_v2_adapter,RF-DETR Small,native_hsi16,10,384,16,0.683614,0.669159,,,identity 1x1 16->16 spectral adapter; 2ep adapter-only + 8ep joint; worse than gain-only control

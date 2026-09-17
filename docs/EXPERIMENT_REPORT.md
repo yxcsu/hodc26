@@ -1,6 +1,6 @@
 # HODC26 Experiment Report
 
-Last updated: 2026-09-16
+Last updated: 2026-09-17
 
 This document summarizes the experiments performed for the Kaggle **Hyperspectral Object Detection Challenge 2026**. It is intended to be sufficiently explicit for another researcher or AI system to audit the current approach, identify failure modes, and propose stronger methods.
 
@@ -193,6 +193,30 @@ Kaggle submission:
 
 This did **not** beat the current repository best Public LB `0.59086` from YOLO11s native 16-band HSI.
 
+### 7.1 Single-model multi-scale TTA
+
+The same Small-v2 checkpoint was evaluated at three aspect-ratio-preserving short-side resolutions and fused as a **single-model TTA** experiment:
+
+- 384;
+- 448;
+- 512;
+- class-wise Weighted Boxes Fusion (WBF), IoU threshold `0.7`.
+
+Single-scale validation mAP50-95:
+
+- 384: `0.67990`;
+- 448: `0.68272`;
+- 512: `0.68121`.
+
+Three-scale WBF results:
+
+- validation mAP50-95: **0.69284**;
+- validation mAP75: **0.83884**;
+- holdout mAP50-95: **0.69007**;
+- holdout mAP75: **0.83079**.
+
+Kaggle submission ref `56281009` achieved **Public LB 0.60617**, improving the previous repository best `0.59086` by `+0.01531`. This is currently the strongest externally verified improvement in the project.
+
 ## 8. Local score versus Kaggle Public LB
 
 The central unresolved issue is the widening gap between local mAP and Public LB.
@@ -204,8 +228,110 @@ The central unresolved issue is the widening gap between local mAP and Public LB
 | YOLO11s native HSI16 | 0.64114 | n/a | **0.59086** | 0.05028 |
 | YOLO11s native HSI16 continuous | 0.64525 | n/a | 0.58259 | 0.06266 |
 | RF-DETR Small-v2 HSI16 | **0.68629** | **0.68030** | 0.59025 | **0.09604** |
+| RF-DETR Small-v2 HSI16, 384+448+512 TTA | 0.69284 | 0.69007 | **0.60617** | 0.08667 |
 
-The RF-DETR holdout agrees very closely with validation, but both overestimate the Public LB by about 0.09. This makes simple validation overfitting less likely than if only one local split were high, but it does not exclude correlated train/val/holdout sampling from the same acquisition groups.
+The RF-DETR holdout agrees very closely with validation. Multi-scale TTA improves both local sets and the Kaggle Public LB in the same direction, which supports the conclusion that localization scale is a real factor rather than a validation-only artifact. A substantial local-to-Public gap remains.
+
+## 8.1 Group-aware validation audit
+
+To test whether near-duplicate scenes were leaking across random splits, conservative content-based scene groups were built using low-resolution image features plus perceptual-hash constraints.
+
+Grouping summary:
+
+- 3,000 training images;
+- 2,896 groups;
+- 47 non-singleton candidate groups;
+- 151 images in non-singleton groups;
+- largest group: 10 images;
+- train/validation/holdout group overlap: zero.
+
+Two independent `2400/300/300` group-aware splits were trained from the original `yolo11s.pt` initialization without cross-fold checkpoint reuse:
+
+| Group split | YOLO11s HSI16 val mAP50-95 | Holdout mAP50-95 |
+|---|---:|---:|
+| seed 42 | **0.70230** | **0.69142** |
+| seed 2026 | **0.67923** | **0.68557** |
+
+These results do **not** support the hypothesis that the earlier local scores were primarily caused by obvious near-duplicate scene leakage. This is not proof that no acquisition-level leakage exists, because official sequence/time/session metadata are unavailable and the grouping is image-content-derived rather than sensor-metadata-derived.
+
+### 8.2 Group-aware RF-DETR audit
+
+RF-DETR was also retrained independently on both group-aware splits. Each fold used its own pseudo-RGB Phase A initialization and did not reuse checkpoints from another fold.
+
+Representative reload-and-evaluate results:
+
+| Group split | Stage | Inference short side | Val mAP50-95 | Holdout mAP50-95 |
+|---|---|---:|---:|---:|
+| seed 42 | Phase A pseudo-RGB | 672 | 0.59529 | 0.57995 |
+| seed 42 | Phase B HSI16 | 672 | **0.60818** | **0.59214** |
+| seed 2026 | Phase A pseudo-RGB | 672 | 0.57332 | 0.59106 |
+| seed 2026 | Phase B HSI16 | 672 | **0.55723** | **0.57764** |
+
+The two folds confirm two points. First, 16-band Phase B can improve over Phase A within a fold, but the magnitude is fold-dependent. Second, RF-DETR remains much weaker than YOLO11s under the conservative group-aware splits unless the later fixed-384 Small-v2 stage and TTA are used. The model is also highly sensitive to inference scale; 672 generally outperformed 512 on these group-aware checkpoints.
+
+### 8.3 Photometric / spectral preprocessing ablations
+
+The group-42 Phase B setup was used for controlled ablations.
+
+At 672 inference:
+
+| Input / normalization | Val mAP50-95 | Holdout mAP50-95 | Conclusion |
+|---|---:|---:|---|
+| uint8 + ImageNet-cyclic | **0.60818** | **0.59214** | baseline |
+| float32 + ImageNet-cyclic | 0.58659 | 0.57043 | worse by ~0.022 on both sets |
+| float32 + train-fold band statistics | 0.58634 | 0.57871 | recovers part of holdout loss but still below uint8 baseline |
+
+Therefore, simply removing uint8 quantization is not beneficial in the current training recipe. Train-fold normalization is better matched to float32 HSI than cyclic RGB ImageNet statistics, but it still does not recover the original baseline.
+
+### 8.4 Weak spectral augmentation ablation
+
+Starting from the same group-42 Phase B checkpoint, both variants used fixed short-side 384, identical low learning rates, and a 10-epoch budget.
+
+Reloaded fixed-384 results:
+
+| Augmentation | Val mAP50-95 | Holdout mAP50-95 |
+|---|---:|---:|
+| gain 0.95-1.05 + tilt ±0.03 + noise 0.0002 | 0.68885 | 0.67284 |
+| gain 0.95-1.05 only | **0.69044** | **0.67466** |
+
+Gain-only is slightly better on both sets, but the improvement is only about +0.0016 to +0.0018, below the predeclared +0.005 submission threshold. It is therefore not considered a confirmed performance gain. It is nevertheless the cleaner default because it removes the physically unverified channel-index tilt without reducing performance.
+
+### 8.5 Identity spectral-adapter ablation
+
+A `1x1 Conv(16->16)` spectral adapter was inserted before the patch projection and initialized to the identity matrix with zero bias. Initialization was verified exactly (`maxdiff=0`). The adapter has only 272 parameters.
+
+Training protocol:
+
+- 2 epochs adapter-only (all detector parameters frozen);
+- then 8 epochs joint fine-tuning at reduced LR;
+- gain-only augmentation;
+- same group-42 split and fixed-384 geometry.
+
+Final reload-and-evaluate results:
+
+- validation mAP50-95: **0.68361**;
+- holdout mAP50-95: **0.66916**;
+- validation AP75: 0.81974;
+- holdout AP75: 0.79971.
+
+This is lower than the no-adapter gain-only control (`0.69044 / 0.67466`), so this simple full-rank identity 1x1 spectral adapter is rejected for the current recipe.
+
+### 8.6 TTA and error-analysis conclusions
+
+Horizontal-flip TTA and non-uniform scale weights were also tested and rejected locally:
+
+- six-view `384/448/512 x {original,hflip}` WBF: val `0.69266`, holdout `0.69084`;
+- three-scale original-view WBF: val `0.69279`, holdout `0.69007`;
+- the extra hflip views do not provide a consistent >=0.005 gain;
+- weighting 448 or 512 more heavily reduced mean val/holdout mAP relative to equal `1:1:1` weights.
+
+Detailed class/size analysis of the strongest three-scale TTA shows:
+
+- validation small-object AP: ~0.657; holdout: ~0.653;
+- medium-object AP is materially higher (~0.746 val, ~0.722 holdout);
+- recurrent weak classes include `stone_block`, `people`, and `car`, with `e-bike` also unstable across splits.
+
+Future work should therefore prioritize small-object localization and these weak classes rather than additional confidence-threshold, hflip, or WBF-weight sweeps.
 
 ## 9. Known implementation pitfalls already fixed
 
@@ -221,25 +347,25 @@ The following issues were found during development and should not be reintroduce
 
 These are hypotheses, not established conclusions.
 
-### A. Group-aware validation may be required
+### A. Acquisition-level metadata remains the best validation improvement
 
-If image IDs or adjacent samples correspond to the same acquisition session/scene/object arrangement, random stratification can leak scene-level information across train/val/holdout. A grouped split should be constructed using any available acquisition metadata or image-similarity clustering.
+Content-based group-aware validation has already been implemented and did not cause YOLO performance to collapse. If official acquisition time/sequence/session metadata becomes available, it would still be preferable to the current image-similarity grouping.
 
-### B. Submission density / score calibration may be suboptimal
+### B. Submission density is no longer a leading hypothesis
 
-RF-DETR submits ~231 boxes per test image at `conf=0.001`. Even when AP theoretically ranks predictions by confidence, the competition's exact evaluator/max-detection behavior may differ from local COCO evaluation. Threshold sweeps, top-K per image, class-specific thresholds, and calibration should be evaluated locally using the exact competition metric implementation if available.
+Confidence/top-K sweeps changed local mAP only at roughly the 0.001 level, and the formal CSV submission path was shown to reproduce RF-DETR evaluation within about 0.0005. Submission density should not be a primary optimization target unless the exact official metric reveals a different truncation rule.
 
-### C. RF-DETR spatial resolution may still be limiting
+### C. Small-object / high-IoU localization is the clearest remaining weakness
 
-384 short-side improves local localization substantially, but controlled inference at 448/512/576 or aspect-ratio-aware multi-scale TTA may improve small-object localization if memory permits. This must be evaluated without changing preprocessing semantics.
+Scale sensitivity is experimentally established, and three-scale TTA already improved Kaggle Public LB from 0.59086 to 0.60617. The next spatial experiments should target small objects and weak classes rather than generic additional scale sweeps.
 
-### D. Spectral front-end is primitive
+### D. More structured spectral front-ends remain open
 
 The current model expands a standard image patch embedding to 16 channels. Stronger alternatives include:
 
 - spectral stem / 1D spectral mixer before the 2D backbone;
 - learned 16→3 or 16→C projection initialized by PCA/linear regression from pretrained RGB features;
-- low-rank spectral adapters;
+- low-rank or gated spectral adapters (the simple identity full-rank 1x1 adapter was tested and was worse);
 - band attention/gating;
 - spectral-spatial separable convolutions;
 - wavelength-aware positional/channel embeddings if wavelengths are available.
@@ -248,21 +374,20 @@ The current model expands a standard image patch embedding to 16 channels. Stron
 
 YOLO11s HSI16 has the best Public LB while RF-DETR has much stronger local localization. Their predictions may be complementary. Weighted Boxes Fusion, class-aware box matching, or score-rank fusion should be tested on validation/holdout before any Kaggle submission.
 
-### F. Test-domain normalization may differ
+### F. Large global test-domain intensity drift is not strongly supported
 
-Because the model uses a fixed clip/scale convention, inspect per-band train/test distributions. If test acquisition has intensity drift, robust percentile calibration, per-cube gain correction, or train-derived per-band normalization may improve transfer.
+Per-band diagnostics found small train/test standardized mean differences and very low saturation under clip=320, except modest concentration in one band. Float32 plus train-fold normalization did not improve the group-aware baseline. More local or scene-conditional normalization could still be explored, but global train-fold statistics are not currently promising.
 
 ## 11. Suggested experiment order
 
 To avoid spending Kaggle submissions inefficiently, a reviewer should prioritize experiments that can be rejected locally:
 
-1. build group-aware or similarity-clustered CV and quantify whether the current 0.68 drops;
-2. reproduce the exact competition metric locally and sweep DETR top-K/confidence strategies;
-3. analyze train-vs-test per-band distribution shift;
-4. evaluate YOLO/RF-DETR error complementarity and WBF/rank fusion on holdout;
-5. test fixed-resolution 448/512 variants from the 384 checkpoint;
-6. test a learnable spectral projection/stem with conservative initialization;
-7. only then consume new Kaggle submissions.
+1. target small-object recall/localization and the recurrent weak classes (`stone_block`, `people`, `car`, unstable `e-bike`);
+2. evaluate YOLO/RF-DETR error complementarity and class-aware single-submission fusion locally;
+3. test a more structured spectral stem (low-rank/gated/wavelength-aware) rather than the rejected plain 1x1 adapter;
+4. if available, rebuild validation using official acquisition/session metadata;
+5. consider a final single-model retraining recipe that preserves the verified 384-stage behavior and three-scale TTA;
+6. only consume a Kaggle submission after >=0.005 consistent val+holdout improvement.
 
 ## 12. Reproducibility map
 

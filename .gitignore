@@ -15,6 +15,11 @@ submissions/
 *.ckpt
 *.onnx
 
+# Large cached prediction tables generated during local evaluation/TTA.
+# Keep compact score JSONs and the machine-readable experiment summary.
+results/**/*.csv
+!results/experiment_summary.csv
+
 # Large image / archive artifacts
 *.tif
 *.tiff
@@ -23,6 +28,15 @@ submissions/
 # Logs and local caches
 *.log
 .cache/
+
+# Large per-image prediction caches produced by local TTA/evaluator sweeps.
+# Keep the compact experiment_summary.csv/json and small score reports in Git.
+results/**/*.csv
+!results/experiment_summary.csv
+results/val_*.csv
+results/holdout_*.csv
+results/group*_val_*.csv
+results/group*_holdout_*.csv
 
 # Local credentials
 .kaggle/
