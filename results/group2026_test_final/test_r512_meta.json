@@ -1,0 +1,18 @@
+{
+  "checkpoint": "runs/rfdetr_group2026_v2_gain_only_10ep/checkpoint_best_total.pth",
+  "dataset": "prepared/rfdetr_hsi16_group2026",
+  "split": "test",
+  "resolution": 512,
+  "channels": 16,
+  "classes": 18,
+  "confidence_threshold": 0.001,
+  "top_k": 300,
+  "hflip": false,
+  "fallback_empty": false,
+  "normalization": "imagenet-cyclic",
+  "normalization_stats": null,
+  "spectral_adapter": false,
+  "images": 1000,
+  "detections": 272787,
+  "fallback_images": 0
+}

@@ -1,0 +1,14 @@
+{
+  "weights": "runs/detect/runs/y11s_hsi16_group2026_25/weights/best.pt",
+  "data": "prepared/hsi16_group_seed2026/data_holdout.yaml",
+  "split": "val",
+  "imgsz": 768,
+  "augment": false,
+  "confidence_threshold": 0.001,
+  "max_det": 300,
+  "detections": 3491,
+  "ultralytics_map_50_95": 0.6853453050870498,
+  "ultralytics_map_50": 0.9558858815882176,
+  "ultralytics_map_75": 0.8212570087880203,
+  "intermediate_json": "/home/yangxiao/hyperspectral-object-detection-challenge-2026/results/yolo_prediction_exports/holdout_768_imgsz768/predictions.json"
+}

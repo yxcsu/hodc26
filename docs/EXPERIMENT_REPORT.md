@@ -227,10 +227,15 @@ The central unresolved issue is the widening gap between local mAP and Public LB
 | YOLO11s pseudo 5/8/13 | 0.64575 | n/a | 0.53704 | 0.10871 |
 | YOLO11s native HSI16 | 0.64114 | n/a | **0.59086** | 0.05028 |
 | YOLO11s native HSI16 continuous | 0.64525 | n/a | 0.58259 | 0.06266 |
-| RF-DETR Small-v2 HSI16 | **0.68629** | **0.68030** | 0.59025 | **0.09604** |
+| RF-DETR Small-v2 HSI16, frozen reload | **0.67989** | **0.67921** | 0.59025 | **0.08964** |
 | RF-DETR Small-v2 HSI16, 384+448+512 TTA | 0.69284 | 0.69007 | **0.60617** | 0.08667 |
 
-The RF-DETR holdout agrees very closely with validation. Multi-scale TTA improves both local sets and the Kaggle Public LB in the same direction, which supports the conclusion that localization scale is a real factor rather than a validation-only artifact. A substantial local-to-Public gap remains.
+The previously quoted `0.68629` validation value was the training-time peak,
+not the score reproduced after reloading the saved checkpoint. The frozen
+checkpoint reload is `0.679889 / 0.679205` on validation/holdout. Multi-scale
+TTA improves both local sets and the Kaggle Public LB in the same direction,
+which supports the conclusion that localization scale is a real factor rather
+than a validation-only artifact. A substantial local-to-Public gap remains.
 
 ## 8.1 Group-aware validation audit
 
@@ -333,6 +338,26 @@ Detailed class/size analysis of the strongest three-scale TTA shows:
 
 Future work should therefore prioritize small-object localization and these weak classes rather than additional confidence-threshold, hflip, or WBF-weight sweeps.
 
+### 8.7 Group-2026 final fixed-384 and crop-TTA audit
+
+The group-2026 Phase-B checkpoint was followed by the planned fixed-384,
+gain-only 10-epoch stage. Reloaded results for
+`runs/rfdetr_group2026_v2_gain_only_10ep/checkpoint_best_total.pth` are:
+
+| Inference | Val mAP50-95 | Holdout mAP50-95 | Val small AP | Holdout small AP |
+|---|---:|---:|---:|---:|
+| fixed 384 | 0.678855 | 0.672859 | 0.648785 | 0.647123 |
+| 384/448/512 WBF | 0.686540 | 0.681814 | 0.660571 | 0.655599 |
+| + 2x2 crop view | **0.688383** | **0.685149** | **0.663995** | **0.659502** |
+
+The crop view uses four 60%-by-60% corner crops, 20% overlap in original-image
+coordinates, box-center ownership by image quadrant, remapping to original
+coordinates, then class-wise WBF with the three full-image scales. Its net gain
+over three-scale TTA is only `+0.00184 / +0.00334` overall and
+`+0.00342 / +0.00390` small AP (val/holdout), below the predeclared
+`+0.005` overall and `+0.01` small-AP thresholds. This crop-TTA route is
+therefore rejected as a submission candidate.
+
 ## 9. Known implementation pitfalls already fixed
 
 The following issues were found during development and should not be reintroduced:
@@ -397,8 +422,13 @@ To avoid spending Kaggle submissions inefficiently, a reviewer should prioritize
 - RF-DETR COCO export: `scripts/prepare_rfdetr_coco.py`
 - RF-DETR multispectral training: `scripts/train_rfdetr_multispectral.py`
 - RF-DETR submission generation: `scripts/make_rfdetr_submission.py`
+- RF-DETR crop-TTA generation: `scripts/make_rfdetr_crop_tta.py`
+- Same-model WBF/NMS fusion: `scripts/fuse_detection_csv.py`
+- Prediction CSV scoring: `scripts/score_detection_csv.py`
 - Kaggle submission helper: `scripts/submit_kaggle.py`
 - YOLO training: `scripts/train_yolo.py`
+- YOLO scale audit: `scripts/eval_yolo_scales.py`
+- Frozen RF-DETR hashes/environment: `results/repro_384/`
 - Machine-readable results: `results/experiment_summary.csv` and `results/experiment_summary.json`
 
 Large datasets, weights, run logs, and submission CSVs remain intentionally excluded from Git.

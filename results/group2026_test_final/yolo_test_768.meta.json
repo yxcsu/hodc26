@@ -1,0 +1,16 @@
+{
+  "weights": "runs/detect/runs/y11s_hsi16_group2026_25/weights/best.pt",
+  "data": "prepared/hsi16_group_seed2026/data.yaml",
+  "coco_gt": "prepared/rfdetr_hsi16_group2026/test/_annotations.coco.json",
+  "split": "test",
+  "imgsz": 768,
+  "augment": false,
+  "confidence_threshold": 0.001,
+  "max_det": 300,
+  "detections": 13902,
+  "category_offset": 1,
+  "intermediate_json": "/home/yangxiao/hyperspectral-object-detection-challenge-2026/results/yolo_prediction_exports/yolo_test_768_imgsz768/predictions.json",
+  "ultralytics_map_50_95": 0.0,
+  "ultralytics_map_50": 0.0,
+  "ultralytics_map_75": 0.0
+}

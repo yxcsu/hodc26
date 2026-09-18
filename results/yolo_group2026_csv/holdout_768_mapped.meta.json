@@ -1,0 +1,13 @@
+{
+  "weights": null,
+  "data": "prepared/hsi16_group_seed2026/data_holdout.yaml",
+  "coco_gt": "prepared/rfdetr_hsi16_group2026_holdout/valid/_annotations.coco.json",
+  "split": "val",
+  "imgsz": 768,
+  "augment": false,
+  "confidence_threshold": 0.001,
+  "max_det": 300,
+  "detections": 3491,
+  "category_offset": 1,
+  "intermediate_json": "results/yolo_prediction_exports/holdout_768_imgsz768/predictions.json"
+}

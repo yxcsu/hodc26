@@ -30,11 +30,17 @@ def read_rows(
                 score = float(row["confidence"])
                 if score <= conf:
                     continue
+                x1 = float(row["x1"])
+                y1 = float(row["y1"])
+                x2 = float(row["x2"])
+                y2 = float(row["y2"])
+                if x2 <= x1 or y2 <= y1:
+                    continue
                 item = {
                     "source": source_idx,
                     "source_weight": float(source_weights[source_idx]),
                     "score": score,
-                    "box": [float(row["x1"]), float(row["y1"]), float(row["x2"]), float(row["y2"])],
+                    "box": [x1, y1, x2, y2],
                 }
                 grouped[(int(row["image_id"]), int(row["class_id"]))].append(item)
     return grouped

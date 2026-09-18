@@ -12,12 +12,19 @@ The strongest local pipeline currently uses RF-DETR Small with 16-band hyperspec
 - Phase B 16-band fine-tuning;
 - Small-v2 fine-tuning with fixed short-side resolution `384`, aspect-ratio preservation, low learning rates, and weak spectral augmentation.
 
-Best Small-v2 local results from the current run:
+Frozen reload-and-score results for the Small-v2 checkpoint are:
 
-- validation mAP50-95: `0.68629`;
-- holdout mAP50-95: `0.68030`.
+- validation mAP50-95: `0.679889`;
+- holdout mAP50-95: `0.679205`.
 
-The corresponding Kaggle submission is generated from the RF-DETR checkpoint with 300 DETR queries, confidence threshold `0.001`, and no extra NMS. Its Public LB score is `0.59025`. The current best Public LB in this repository remains `0.59086` from YOLO11s native 16-band HSI.
+The earlier `0.68629` value was a training-time peak and is not used as the
+reproducible checkpoint score. With legal same-model `384/448/512` TTA and
+class-wise WBF, the same checkpoint reaches `0.69284 / 0.69007`
+(validation/holdout) and **Public LB `0.60617`**, which is the current
+repository best.
+
+The frozen checkpoint/split/script hashes and environment are recorded under
+`results/repro_384/`.
 
 ## Experiment documentation
 
@@ -36,6 +43,10 @@ For external/AI review, start with:
 - `scripts/prepare_rfdetr_coco.py` — RF-DETR COCO dataset conversion.
 - `scripts/train_rfdetr_multispectral.py` — multispectral RF-DETR training and weak spectral augmentation.
 - `scripts/make_rfdetr_submission.py` — RF-DETR Kaggle submission generation.
+- `scripts/make_rfdetr_crop_tta.py` — legal same-model 2x2 crop-TTA inference.
+- `scripts/fuse_detection_csv.py` — class-wise same-model WBF/NMS fusion.
+- `scripts/score_detection_csv.py` — COCO-style scoring of prediction CSVs.
+- `scripts/eval_yolo_scales.py` — matched YOLO inference-scale audit.
 - `scripts/submit_kaggle.py` — Kaggle submission helper using a local access token.
 
 ## Local-only files

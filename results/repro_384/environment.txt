@@ -1,0 +1,9 @@
+python 3.10.14 (main, May  6 2024, 19:42:50) [GCC 11.2.0]
+torch 2.14.0+cu126
+torchvision 0.29.0+cu126
+numpy 2.2.6
+PIL 12.3.0
+rfdetr unknown
+cuda 12.6
+cudnn 91002
+gpu NVIDIA GeForce RTX 4090

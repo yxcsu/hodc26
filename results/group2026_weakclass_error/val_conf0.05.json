@@ -1,0 +1,1410 @@
+{
+  "gt": "prepared/rfdetr_hsi16_group2026/valid/_annotations.coco.json",
+  "pred": "results/group2026_final_crop_tta/val_full3_wbf07.csv",
+  "min_conf": 0.05,
+  "match_iou": 0.5,
+  "loc_iou": 0.1,
+  "classes": [
+    "stone_block",
+    "people",
+    "car",
+    "e-bike"
+  ],
+  "summary": {
+    "stone_block": {
+      "class_id": 16,
+      "gt": 34,
+      "detected": 34,
+      "localization": 0,
+      "classification": 0,
+      "miss": 0,
+      "detected_rate": 1.0,
+      "localization_rate": 0.0,
+      "classification_rate": 0.0,
+      "miss_rate": 0.0
+    },
+    "people": {
+      "class_id": 14,
+      "gt": 130,
+      "detected": 106,
+      "localization": 22,
+      "classification": 0,
+      "miss": 2,
+      "detected_rate": 0.8153846153846154,
+      "localization_rate": 0.16923076923076924,
+      "classification_rate": 0.0,
+      "miss_rate": 0.015384615384615385
+    },
+    "car": {
+      "class_id": 5,
+      "gt": 82,
+      "detected": 68,
+      "localization": 5,
+      "classification": 0,
+      "miss": 9,
+      "detected_rate": 0.8292682926829268,
+      "localization_rate": 0.06097560975609756,
+      "classification_rate": 0.0,
+      "miss_rate": 0.10975609756097561
+    },
+    "e-bike": {
+      "class_id": 8,
+      "gt": 44,
+      "detected": 35,
+      "localization": 1,
+      "classification": 4,
+      "miss": 4,
+      "detected_rate": 0.7954545454545454,
+      "localization_rate": 0.022727272727272728,
+      "classification_rate": 0.09090909090909091,
+      "miss_rate": 0.09090909090909091
+    }
+  },
+  "classification_confusion": {
+    "e-bike": {
+      "people": 4
+    }
+  },
+  "hard_images": [
+    {
+      "image_id": 3294,
+      "file_name": "3294.tiff",
+      "hardness": 11.5,
+      "errors": {
+        "e-bike": {
+          "miss": 3,
+          "classification": 3
+        },
+        "people": {
+          "localization": 1
+        }
+      }
+    },
+    {
+      "image_id": 1836,
+      "file_name": "1836.tiff",
+      "hardness": 10.0,
+      "errors": {
+        "car": {
+          "miss": 5
+        }
+      }
+    },
+    {
+      "image_id": 3290,
+      "file_name": "3290.tiff",
+      "hardness": 8.0,
+      "errors": {
+        "people": {
+          "localization": 8
+        }
+      }
+    },
+    {
+      "image_id": 3243,
+      "file_name": "3243.tiff",
+      "hardness": 7.0,
+      "errors": {
+        "people": {
+          "localization": 7
+        }
+      }
+    },
+    {
+      "image_id": 4541,
+      "file_name": "4541.tiff",
+      "hardness": 6.0,
+      "errors": {
+        "car": {
+          "miss": 1
+        },
+        "people": {
+          "miss": 1
+        },
+        "e-bike": {
+          "miss": 1
+        }
+      }
+    },
+    {
+      "image_id": 2380,
+      "file_name": "2380.tiff",
+      "hardness": 4.0,
+      "errors": {
+        "car": {
+          "miss": 2
+        }
+      }
+    },
+    {
+      "image_id": 4535,
+      "file_name": "4535.tiff",
+      "hardness": 3.0,
+      "errors": {
+        "car": {
+          "miss": 1,
+          "localization": 1
+        }
+      }
+    },
+    {
+      "image_id": 2041,
+      "file_name": "2041.tiff",
+      "hardness": 2.5,
+      "errors": {
+        "people": {
+          "localization": 1
+        },
+        "e-bike": {
+          "classification": 1
+        }
+      }
+    },
+    {
+      "image_id": 570,
+      "file_name": "570.tiff",
+      "hardness": 2.0,
+      "errors": {
+        "people": {
+          "miss": 1
+        }
+      }
+    },
+    {
+      "image_id": 1974,
+      "file_name": "1974.tiff",
+      "hardness": 2.0,
+      "errors": {
+        "people": {
+          "localization": 2
+        }
+      }
+    },
+    {
+      "image_id": 3755,
+      "file_name": "3755.tiff",
+      "hardness": 2.0,
+      "errors": {
+        "car": {
+          "localization": 2
+        }
+      }
+    },
+    {
+      "image_id": 4088,
+      "file_name": "4088.tiff",
+      "hardness": 2.0,
+      "errors": {
+        "car": {
+          "localization": 2
+        }
+      }
+    },
+    {
+      "image_id": 4948,
+      "file_name": "4948.tiff",
+      "hardness": 2.0,
+      "errors": {
+        "people": {
+          "localization": 2
+        }
+      }
+    },
+    {
+      "image_id": 558,
+      "file_name": "558.tiff",
+      "hardness": 1.0,
+      "errors": {
+        "e-bike": {
+          "localization": 1
+        }
+      }
+    },
+    {
+      "image_id": 2758,
+      "file_name": "2758.tiff",
+      "hardness": 1.0,
+      "errors": {
+        "people": {
+          "localization": 1
+        }
+      }
+    },
+    {
+      "image_id": 45,
+      "file_name": "45.tiff",
+      "hardness": 0.0,
+      "errors": {}
+    },
+    {
+      "image_id": 225,
+      "file_name": "225.tiff",
+      "hardness": 0.0,
+      "errors": {}
+    },
+    {
+      "image_id": 390,
+      "file_name": "390.tiff",
+      "hardness": 0.0,
+      "errors": {}
+    },
+    {
+      "image_id": 436,
+      "file_name": "436.tiff",
+      "hardness": 0.0,
+      "errors": {}
+    },
+    {
+      "image_id": 444,
+      "file_name": "444.tiff",
+      "hardness": 0.0,
+      "errors": {}
+    },
+    {
+      "image_id": 750,
+      "file_name": "750.tiff",
+      "hardness": 0.0,
+      "errors": {}
+    },
+    {
+      "image_id": 928,
+      "file_name": "928.tiff",
+      "hardness": 0.0,
+      "errors": {}
+    },
+    {
+      "image_id": 1052,
+      "file_name": "1052.tiff",
+      "hardness": 0.0,
+      "errors": {}
+    },
+    {
+      "image_id": 1120,
+      "file_name": "1120.tiff",
+      "hardness": 0.0,
+      "errors": {}
+    },
+    {
+      "image_id": 1202,
+      "file_name": "1202.tiff",
+      "hardness": 0.0,
+      "errors": {}
+    },
+    {
+      "image_id": 1242,
+      "file_name": "1242.tiff",
+      "hardness": 0.0,
+      "errors": {}
+    },
+    {
+      "image_id": 1685,
+      "file_name": "1685.tiff",
+      "hardness": 0.0,
+      "errors": {}
+    },
+    {
+      "image_id": 1834,
+      "file_name": "1834.tiff",
+      "hardness": 0.0,
+      "errors": {}
+    },
+    {
+      "image_id": 2016,
+      "file_name": "2016.tiff",
+      "hardness": 0.0,
+      "errors": {}
+    },
+    {
+      "image_id": 2023,
+      "file_name": "2023.tiff",
+      "hardness": 0.0,
+      "errors": {}
+    },
+    {
+      "image_id": 2048,
+      "file_name": "2048.tiff",
+      "hardness": 0.0,
+      "errors": {}
+    },
+    {
+      "image_id": 2105,
+      "file_name": "2105.tiff",
+      "hardness": 0.0,
+      "errors": {}
+    },
+    {
+      "image_id": 2182,
+      "file_name": "2182.tiff",
+      "hardness": 0.0,
+      "errors": {}
+    },
+    {
+      "image_id": 2213,
+      "file_name": "2213.tiff",
+      "hardness": 0.0,
+      "errors": {}
+    },
+    {
+      "image_id": 2244,
+      "file_name": "2244.tiff",
+      "hardness": 0.0,
+      "errors": {}
+    },
+    {
+      "image_id": 2288,
+      "file_name": "2288.tiff",
+      "hardness": 0.0,
+      "errors": {}
+    },
+    {
+      "image_id": 2373,
+      "file_name": "2373.tiff",
+      "hardness": 0.0,
+      "errors": {}
+    },
+    {
+      "image_id": 2374,
+      "file_name": "2374.tiff",
+      "hardness": 0.0,
+      "errors": {}
+    },
+    {
+      "image_id": 2444,
+      "file_name": "2444.tiff",
+      "hardness": 0.0,
+      "errors": {}
+    },
+    {
+      "image_id": 2675,
+      "file_name": "2675.tiff",
+      "hardness": 0.0,
+      "errors": {}
+    },
+    {
+      "image_id": 2726,
+      "file_name": "2726.tiff",
+      "hardness": 0.0,
+      "errors": {}
+    },
+    {
+      "image_id": 2868,
+      "file_name": "2868.tiff",
+      "hardness": 0.0,
+      "errors": {}
+    },
+    {
+      "image_id": 3218,
+      "file_name": "3218.tiff",
+      "hardness": 0.0,
+      "errors": {}
+    },
+    {
+      "image_id": 3286,
+      "file_name": "3286.tiff",
+      "hardness": 0.0,
+      "errors": {}
+    },
+    {
+      "image_id": 3292,
+      "file_name": "3292.tiff",
+      "hardness": 0.0,
+      "errors": {}
+    },
+    {
+      "image_id": 3459,
+      "file_name": "3459.tiff",
+      "hardness": 0.0,
+      "errors": {}
+    },
+    {
+      "image_id": 3568,
+      "file_name": "3568.tiff",
+      "hardness": 0.0,
+      "errors": {}
+    },
+    {
+      "image_id": 4360,
+      "file_name": "4360.tiff",
+      "hardness": 0.0,
+      "errors": {}
+    },
+    {
+      "image_id": 4395,
+      "file_name": "4395.tiff",
+      "hardness": 0.0,
+      "errors": {}
+    },
+    {
+      "image_id": 4439,
+      "file_name": "4439.tiff",
+      "hardness": 0.0,
+      "errors": {}
+    },
+    {
+      "image_id": 4567,
+      "file_name": "4567.tiff",
+      "hardness": 0.0,
+      "errors": {}
+    },
+    {
+      "image_id": 4737,
+      "file_name": "4737.tiff",
+      "hardness": 0.0,
+      "errors": {}
+    },
+    {
+      "image_id": 4825,
+      "file_name": "4825.tiff",
+      "hardness": 0.0,
+      "errors": {}
+    },
+    {
+      "image_id": 4915,
+      "file_name": "4915.tiff",
+      "hardness": 0.0,
+      "errors": {}
+    }
+  ],
+  "errors": [
+    {
+      "image_id": 558,
+      "file_name": "558.tiff",
+      "ann_id": 143,
+      "class": "e-bike",
+      "class_id": 8,
+      "error": "localization",
+      "area": 2408.9999813600016,
+      "bbox_xyxy": [
+        213.00000252,
+        136.99999989,
+        246.00000212000003,
+        210.00000021
+      ],
+      "best_same_iou": 0.24860222907838359,
+      "best_same_score": 0.8276005387306213,
+      "best_any_iou": 0.24860222907838359,
+      "best_any_class": 8,
+      "best_any_score": 0.8276005387306213
+    },
+    {
+      "image_id": 570,
+      "file_name": "570.tiff",
+      "ann_id": 146,
+      "class": "people",
+      "class_id": 14,
+      "error": "miss",
+      "area": 323.99999999999847,
+      "bbox_xyxy": [
+        282.0,
+        88.99999872,
+        293.99999999999994,
+        115.99999872
+      ],
+      "best_same_iou": 0.0,
+      "best_same_score": 0.3357801487048467,
+      "best_any_iou": 0.0,
+      "best_any_class": 14,
+      "best_any_score": 0.3357801487048467
+    },
+    {
+      "image_id": 1836,
+      "file_name": "1836.tiff",
+      "ann_id": 339,
+      "class": "car",
+      "class_id": 5,
+      "error": "miss",
+      "area": 682.954578971133,
+      "bbox_xyxy": [
+        7.746535064999999,
+        64.644532485,
+        49.384156455,
+        81.046876235
+      ],
+      "best_same_iou": 0.0,
+      "best_same_score": 0.755951444307963,
+      "best_any_iou": 0.0,
+      "best_any_class": 5,
+      "best_any_score": 0.755951444307963
+    },
+    {
+      "image_id": 1836,
+      "file_name": "1836.tiff",
+      "ann_id": 340,
+      "class": "car",
+      "class_id": 5,
+      "error": "miss",
+      "area": 727.7998018017194,
+      "bbox_xyxy": [
+        66.81385974,
+        60.785155014999994,
+        106.51485042000002,
+        79.117186265
+      ],
+      "best_same_iou": 0.0,
+      "best_same_score": 0.755951444307963,
+      "best_any_iou": 0.0,
+      "best_any_class": 5,
+      "best_any_score": 0.755951444307963
+    },
+    {
+      "image_id": 1836,
+      "file_name": "1836.tiff",
+      "ann_id": 341,
+      "class": "car",
+      "class_id": 5,
+      "error": "miss",
+      "area": 433.50332215125,
+      "bbox_xyxy": [
+        134.59604217,
+        58.85546875,
+        162.67722903,
+        74.29296875
+      ],
+      "best_same_iou": 0.0,
+      "best_same_score": 0.755951444307963,
+      "best_any_iou": 0.0,
+      "best_any_class": 5,
+      "best_any_score": 0.755951444307963
+    },
+    {
+      "image_id": 1836,
+      "file_name": "1836.tiff",
+      "ann_id": 342,
+      "class": "car",
+      "class_id": 5,
+      "error": "miss",
+      "area": 448.45172818874994,
+      "bbox_xyxy": [
+        167.51881314000002,
+        56.92578125,
+        196.56831780000002,
+        72.36328125
+      ],
+      "best_same_iou": 0.0,
+      "best_same_score": 0.755951444307963,
+      "best_any_iou": 0.0,
+      "best_any_class": 5,
+      "best_any_score": 0.755951444307963
+    },
+    {
+      "image_id": 1836,
+      "file_name": "1836.tiff",
+      "ann_id": 343,
+      "class": "car",
+      "class_id": 5,
+      "error": "miss",
+      "area": 1345.355127949219,
+      "bbox_xyxy": [
+        229.49108877,
+        100.34375,
+        275.97029427,
+        129.2890625
+      ],
+      "best_same_iou": 0.0,
+      "best_same_score": 0.755951444307963,
+      "best_any_iou": 0.0,
+      "best_any_class": 5,
+      "best_any_score": 0.755951444307963
+    },
+    {
+      "image_id": 1974,
+      "file_name": "1974.tiff",
+      "ann_id": 366,
+      "class": "people",
+      "class_id": 14,
+      "error": "localization",
+      "area": 408.0,
+      "bbox_xyxy": [
+        407.0,
+        135.0,
+        419.0,
+        169.0
+      ],
+      "best_same_iou": 0.4975761955575961,
+      "best_same_score": 0.7864313721656799,
+      "best_any_iou": 0.4975761955575961,
+      "best_any_class": 14,
+      "best_any_score": 0.7864313721656799
+    },
+    {
+      "image_id": 1974,
+      "file_name": "1974.tiff",
+      "ann_id": 369,
+      "class": "people",
+      "class_id": 14,
+      "error": "localization",
+      "area": 405.0,
+      "bbox_xyxy": [
+        288.0,
+        138.99999872,
+        303.0,
+        165.99999872
+      ],
+      "best_same_iou": 0.48068114508866494,
+      "best_same_score": 0.7219364841779073,
+      "best_any_iou": 0.48068114508866494,
+      "best_any_class": 14,
+      "best_any_score": 0.7219364841779073
+    },
+    {
+      "image_id": 2041,
+      "file_name": "2041.tiff",
+      "ann_id": 409,
+      "class": "people",
+      "class_id": 14,
+      "error": "localization",
+      "area": 90.00000257999851,
+      "bbox_xyxy": [
+        397.99999977,
+        156.00000065,
+        404.00000042999994,
+        170.99999943
+      ],
+      "best_same_iou": 0.4977353189113261,
+      "best_same_score": 0.09247048199176788,
+      "best_any_iou": 0.4977353189113261,
+      "best_any_class": 14,
+      "best_any_score": 0.09247048199176788
+    },
+    {
+      "image_id": 2041,
+      "file_name": "2041.tiff",
+      "ann_id": 412,
+      "class": "e-bike",
+      "class_id": 8,
+      "error": "classification",
+      "area": 256.0000363200015,
+      "bbox_xyxy": [
+        103.00000155,
+        159.99999892499997,
+        119.00000331,
+        175.999999435
+      ],
+      "best_same_iou": 0.0,
+      "best_same_score": 0.4469609558582306,
+      "best_any_iou": 0.6261936369590693,
+      "best_any_class": 14,
+      "best_any_score": 0.05227764447530111
+    },
+    {
+      "image_id": 2380,
+      "file_name": "2380.tiff",
+      "ann_id": 514,
+      "class": "car",
+      "class_id": 5,
+      "error": "miss",
+      "area": 364.0000129999996,
+      "bbox_xyxy": [
+        294.99999954,
+        143.99999965,
+        322.99999998,
+        156.99999990999999
+      ],
+      "best_same_iou": 0.0,
+      "best_same_score": 0.8375790119171143,
+      "best_any_iou": 0.0,
+      "best_any_class": 5,
+      "best_any_score": 0.8375790119171143
+    },
+    {
+      "image_id": 2380,
+      "file_name": "2380.tiff",
+      "ann_id": 515,
+      "class": "car",
+      "class_id": 5,
+      "error": "miss",
+      "area": 170.0000221699998,
+      "bbox_xyxy": [
+        238.99999866,
+        131.000000625,
+        256.00000086,
+        141.000000635
+      ],
+      "best_same_iou": 0.0,
+      "best_same_score": 0.8375790119171143,
+      "best_any_iou": 0.0,
+      "best_any_class": 5,
+      "best_any_score": 0.8375790119171143
+    },
+    {
+      "image_id": 2758,
+      "file_name": "2758.tiff",
+      "ann_id": 592,
+      "class": "people",
+      "class_id": 14,
+      "error": "localization",
+      "area": 216.00000000000068,
+      "bbox_xyxy": [
+        251.0000016,
+        78.0,
+        260.0000016,
+        102.0
+      ],
+      "best_same_iou": 0.4021838310571967,
+      "best_same_score": 0.2630033989747365,
+      "best_any_iou": 0.4021838310571967,
+      "best_any_class": 14,
+      "best_any_score": 0.2630033989747365
+    },
+    {
+      "image_id": 3243,
+      "file_name": "3243.tiff",
+      "ann_id": 652,
+      "class": "people",
+      "class_id": 14,
+      "error": "localization",
+      "area": 390.0000000000017,
+      "bbox_xyxy": [
+        458.0,
+        146.0,
+        471.00000000000006,
+        176.0
+      ],
+      "best_same_iou": 0.4769162100858638,
+      "best_same_score": 0.060351818799972534,
+      "best_any_iou": 0.4769162100858638,
+      "best_any_class": 14,
+      "best_any_score": 0.060351818799972534
+    },
+    {
+      "image_id": 3243,
+      "file_name": "3243.tiff",
+      "ann_id": 656,
+      "class": "people",
+      "class_id": 14,
+      "error": "localization",
+      "area": 420.0,
+      "bbox_xyxy": [
+        291.0,
+        147.0,
+        306.0,
+        175.0
+      ],
+      "best_same_iou": 0.4297811595516644,
+      "best_same_score": 0.7012667655944824,
+      "best_any_iou": 0.4297811595516644,
+      "best_any_class": 14,
+      "best_any_score": 0.7012667655944824
+    },
+    {
+      "image_id": 3243,
+      "file_name": "3243.tiff",
+      "ann_id": 659,
+      "class": "people",
+      "class_id": 14,
+      "error": "localization",
+      "area": 408.0000000000007,
+      "bbox_xyxy": [
+        201.99999999999997,
+        149.0,
+        219.0,
+        173.0
+      ],
+      "best_same_iou": 0.41909441538834985,
+      "best_same_score": 0.0844798069447279,
+      "best_any_iou": 0.41909441538834985,
+      "best_any_class": 14,
+      "best_any_score": 0.0844798069447279
+    },
+    {
+      "image_id": 3243,
+      "file_name": "3243.tiff",
+      "ann_id": 660,
+      "class": "people",
+      "class_id": 14,
+      "error": "localization",
+      "area": 959.9999999999991,
+      "bbox_xyxy": [
+        126.0,
+        146.0,
+        155.99999999999997,
+        178.0
+      ],
+      "best_same_iou": 0.3770882749756327,
+      "best_same_score": 0.7572319308916727,
+      "best_any_iou": 0.3770882749756327,
+      "best_any_class": 14,
+      "best_any_score": 0.7572319308916727
+    },
+    {
+      "image_id": 3243,
+      "file_name": "3243.tiff",
+      "ann_id": 661,
+      "class": "people",
+      "class_id": 14,
+      "error": "localization",
+      "area": 513.0,
+      "bbox_xyxy": [
+        183.0,
+        144.00000128,
+        202.0,
+        171.00000128
+      ],
+      "best_same_iou": 0.3405132683619332,
+      "best_same_score": 0.32953254133462906,
+      "best_any_iou": 0.3405132683619332,
+      "best_any_class": 14,
+      "best_any_score": 0.32953254133462906
+    },
+    {
+      "image_id": 3243,
+      "file_name": "3243.tiff",
+      "ann_id": 662,
+      "class": "people",
+      "class_id": 14,
+      "error": "localization",
+      "area": 231.0,
+      "bbox_xyxy": [
+        374.0,
+        139.00000128,
+        381.0,
+        172.00000128
+      ],
+      "best_same_iou": 0.40096837265211055,
+      "best_same_score": 0.5045492053031921,
+      "best_any_iou": 0.40096837265211055,
+      "best_any_class": 14,
+      "best_any_score": 0.5045492053031921
+    },
+    {
+      "image_id": 3243,
+      "file_name": "3243.tiff",
+      "ann_id": 663,
+      "class": "people",
+      "class_id": 14,
+      "error": "localization",
+      "area": 250.0,
+      "bbox_xyxy": [
+        379.0,
+        141.99999872,
+        389.0,
+        166.99999872
+      ],
+      "best_same_iou": 0.46451811600439713,
+      "best_same_score": 0.5045492053031921,
+      "best_any_iou": 0.46451811600439713,
+      "best_any_class": 14,
+      "best_any_score": 0.5045492053031921
+    },
+    {
+      "image_id": 3290,
+      "file_name": "3290.tiff",
+      "ann_id": 675,
+      "class": "people",
+      "class_id": 14,
+      "error": "localization",
+      "area": 396.0,
+      "bbox_xyxy": [
+        423.0,
+        141.0,
+        441.0,
+        163.0
+      ],
+      "best_same_iou": 0.47991695285957264,
+      "best_same_score": 0.5688410003980001,
+      "best_any_iou": 0.47991695285957264,
+      "best_any_class": 14,
+      "best_any_score": 0.5688410003980001
+    },
+    {
+      "image_id": 3290,
+      "file_name": "3290.tiff",
+      "ann_id": 677,
+      "class": "people",
+      "class_id": 14,
+      "error": "localization",
+      "area": 341.0,
+      "bbox_xyxy": [
+        394.0,
+        140.00000128,
+        405.0,
+        171.00000128
+      ],
+      "best_same_iou": 0.4950583196589789,
+      "best_same_score": 0.6435894171396891,
+      "best_any_iou": 0.4950583196589789,
+      "best_any_class": 14,
+      "best_any_score": 0.6435894171396891
+    },
+    {
+      "image_id": 3290,
+      "file_name": "3290.tiff",
+      "ann_id": 678,
+      "class": "people",
+      "class_id": 14,
+      "error": "localization",
+      "area": 225.0,
+      "bbox_xyxy": [
+        386.0,
+        143.00000128,
+        395.0,
+        168.00000128
+      ],
+      "best_same_iou": 0.30551434299747954,
+      "best_same_score": 0.6435894171396891,
+      "best_any_iou": 0.30551434299747954,
+      "best_any_class": 14,
+      "best_any_score": 0.6435894171396891
+    },
+    {
+      "image_id": 3290,
+      "file_name": "3290.tiff",
+      "ann_id": 681,
+      "class": "people",
+      "class_id": 14,
+      "error": "localization",
+      "area": 264.0,
+      "bbox_xyxy": [
+        433.0,
+        154.0,
+        444.0,
+        178.0
+      ],
+      "best_same_iou": 0.395672279533723,
+      "best_same_score": 0.09288980811834335,
+      "best_any_iou": 0.395672279533723,
+      "best_any_class": 14,
+      "best_any_score": 0.09288980811834335
+    },
+    {
+      "image_id": 3290,
+      "file_name": "3290.tiff",
+      "ann_id": 683,
+      "class": "people",
+      "class_id": 14,
+      "error": "localization",
+      "area": 360.0,
+      "bbox_xyxy": [
+        259.0,
+        141.0,
+        274.0,
+        165.0
+      ],
+      "best_same_iou": 0.49751773997783133,
+      "best_same_score": 0.6744041840235392,
+      "best_any_iou": 0.49751773997783133,
+      "best_any_class": 14,
+      "best_any_score": 0.6744041840235392
+    },
+    {
+      "image_id": 3290,
+      "file_name": "3290.tiff",
+      "ann_id": 685,
+      "class": "people",
+      "class_id": 14,
+      "error": "localization",
+      "area": 270.0,
+      "bbox_xyxy": [
+        214.0,
+        152.0,
+        229.0,
+        170.0
+      ],
+      "best_same_iou": 0.4850153299717716,
+      "best_same_score": 0.05925953884919485,
+      "best_any_iou": 0.4850153299717716,
+      "best_any_class": 14,
+      "best_any_score": 0.05925953884919485
+    },
+    {
+      "image_id": 3290,
+      "file_name": "3290.tiff",
+      "ann_id": 687,
+      "class": "people",
+      "class_id": 14,
+      "error": "localization",
+      "area": 828.0000000000005,
+      "bbox_xyxy": [
+        124.00000000000001,
+        136.0,
+        147.00000000000003,
+        172.0
+      ],
+      "best_same_iou": 0.4699965274095199,
+      "best_same_score": 0.8292832175890604,
+      "best_any_iou": 0.4699965274095199,
+      "best_any_class": 14,
+      "best_any_score": 0.8292832175890604
+    },
+    {
+      "image_id": 3290,
+      "file_name": "3290.tiff",
+      "ann_id": 688,
+      "class": "people",
+      "class_id": 14,
+      "error": "localization",
+      "area": 413.99999999999966,
+      "bbox_xyxy": [
+        75.00000000000001,
+        132.00000128,
+        93.0,
+        155.00000128
+      ],
+      "best_same_iou": 0.4694882243415864,
+      "best_same_score": 0.7116515437761942,
+      "best_any_iou": 0.4694882243415864,
+      "best_any_class": 14,
+      "best_any_score": 0.7116515437761942
+    },
+    {
+      "image_id": 3294,
+      "file_name": "3294.tiff",
+      "ann_id": 690,
+      "class": "e-bike",
+      "class_id": 8,
+      "error": "miss",
+      "area": 6047.999999999995,
+      "bbox_xyxy": [
+        370.00000000000006,
+        84.0,
+        442.0,
+        168.0
+      ],
+      "best_same_iou": 0.09538443526212949,
+      "best_same_score": 0.054730900252858795,
+      "best_any_iou": 0.35434836545200027,
+      "best_any_class": 14,
+      "best_any_score": 0.8432282408078512
+    },
+    {
+      "image_id": 3294,
+      "file_name": "3294.tiff",
+      "ann_id": 691,
+      "class": "e-bike",
+      "class_id": 8,
+      "error": "classification",
+      "area": 1428.0,
+      "bbox_xyxy": [
+        201.0,
+        102.0,
+        235.0,
+        144.0
+      ],
+      "best_same_iou": 0.26603441135860956,
+      "best_same_score": 0.05663089454174042,
+      "best_any_iou": 0.5483052859555729,
+      "best_any_class": 14,
+      "best_any_score": 0.8151832620302836
+    },
+    {
+      "image_id": 3294,
+      "file_name": "3294.tiff",
+      "ann_id": 692,
+      "class": "e-bike",
+      "class_id": 8,
+      "error": "miss",
+      "area": 360.00000000000057,
+      "bbox_xyxy": [
+        126.0,
+        117.0,
+        144.00000000000003,
+        137.0
+      ],
+      "best_same_iou": 0.0,
+      "best_same_score": 0.7995249032974243,
+      "best_any_iou": 0.11330669922793284,
+      "best_any_class": 14,
+      "best_any_score": 0.059589012215534844
+    },
+    {
+      "image_id": 3294,
+      "file_name": "3294.tiff",
+      "ann_id": 693,
+      "class": "e-bike",
+      "class_id": 8,
+      "error": "classification",
+      "area": 900.0,
+      "bbox_xyxy": [
+        98.0,
+        97.0,
+        123.0,
+        133.0
+      ],
+      "best_same_iou": 0.27685687320782604,
+      "best_same_score": 0.7995249032974243,
+      "best_any_iou": 0.7570132003571013,
+      "best_any_class": 14,
+      "best_any_score": 0.6107972959677378
+    },
+    {
+      "image_id": 3294,
+      "file_name": "3294.tiff",
+      "ann_id": 694,
+      "class": "e-bike",
+      "class_id": 8,
+      "error": "miss",
+      "area": 713.0000000000003,
+      "bbox_xyxy": [
+        43.0,
+        106.99999872,
+        66.0,
+        137.99999872
+      ],
+      "best_same_iou": 0.0,
+      "best_same_score": 0.7995249032974243,
+      "best_any_iou": 0.0,
+      "best_any_class": 14,
+      "best_any_score": 0.8432282408078512
+    },
+    {
+      "image_id": 3294,
+      "file_name": "3294.tiff",
+      "ann_id": 695,
+      "class": "e-bike",
+      "class_id": 8,
+      "error": "classification",
+      "area": 280.0000000000003,
+      "bbox_xyxy": [
+        75.0,
+        108.0,
+        89.00000000000001,
+        128.0
+      ],
+      "best_same_iou": 0.05767258516433966,
+      "best_same_score": 0.7995249032974243,
+      "best_any_iou": 0.7589535104210021,
+      "best_any_class": 14,
+      "best_any_score": 0.09978810201088588
+    },
+    {
+      "image_id": 3294,
+      "file_name": "3294.tiff",
+      "ann_id": 698,
+      "class": "people",
+      "class_id": 14,
+      "error": "localization",
+      "area": 182.00000000000017,
+      "bbox_xyxy": [
+        196.0,
+        115.00000128,
+        210.00000000000003,
+        128.00000128
+      ],
+      "best_same_iou": 0.28557866415645256,
+      "best_same_score": 0.059281520545482635,
+      "best_any_iou": 0.28557866415645256,
+      "best_any_class": 14,
+      "best_any_score": 0.059281520545482635
+    },
+    {
+      "image_id": 3755,
+      "file_name": "3755.tiff",
+      "ann_id": 799,
+      "class": "car",
+      "class_id": 5,
+      "error": "localization",
+      "area": 783.9999025600039,
+      "bbox_xyxy": [
+        170.00000003999997,
+        66.99999976999999,
+        197.99999778,
+        94.99999855
+      ],
+      "best_same_iou": 0.4547636493400296,
+      "best_same_score": 0.32525286078453064,
+      "best_any_iou": 0.4547636493400296,
+      "best_any_class": 5,
+      "best_any_score": 0.32525286078453064
+    },
+    {
+      "image_id": 3755,
+      "file_name": "3755.tiff",
+      "ann_id": 802,
+      "class": "car",
+      "class_id": 5,
+      "error": "localization",
+      "area": 300.00000584999907,
+      "bbox_xyxy": [
+        91.999999455,
+        74.00000072,
+        111.999998565,
+        89.00000168
+      ],
+      "best_same_iou": 0.49427199204936584,
+      "best_same_score": 0.45506547888120014,
+      "best_any_iou": 0.49427199204936584,
+      "best_any_class": 5,
+      "best_any_score": 0.45506547888120014
+    },
+    {
+      "image_id": 4088,
+      "file_name": "4088.tiff",
+      "ann_id": 857,
+      "class": "car",
+      "class_id": 5,
+      "error": "localization",
+      "area": 639.9999524399998,
+      "bbox_xyxy": [
+        469.00000270500004,
+        67.000001025,
+        501.000002295,
+        86.99999979500001
+      ],
+      "best_same_iou": 0.4905758869130873,
+      "best_same_score": 0.25460246702035266,
+      "best_any_iou": 0.4905758869130873,
+      "best_any_class": 5,
+      "best_any_score": 0.25460246702035266
+    },
+    {
+      "image_id": 4088,
+      "file_name": "4088.tiff",
+      "ann_id": 860,
+      "class": "car",
+      "class_id": 5,
+      "error": "localization",
+      "area": 135.00001404000068,
+      "bbox_xyxy": [
+        139.00000218,
+        61.99999945000001,
+        148.00000254000003,
+        77.00000041
+      ],
+      "best_same_iou": 0.4679739521839125,
+      "best_same_score": 0.39853812257448834,
+      "best_any_iou": 0.4679739521839125,
+      "best_any_class": 5,
+      "best_any_score": 0.39853812257448834
+    },
+    {
+      "image_id": 4535,
+      "file_name": "4535.tiff",
+      "ann_id": 931,
+      "class": "car",
+      "class_id": 5,
+      "error": "miss",
+      "area": 29.999997699999458,
+      "bbox_xyxy": [
+        13.00000284,
+        133.99999964000003,
+        18.000002040000002,
+        140.00000014
+      ],
+      "best_same_iou": 0.0,
+      "best_same_score": 0.8805637756983439,
+      "best_any_iou": 0.0,
+      "best_any_class": 5,
+      "best_any_score": 0.8805637756983439
+    },
+    {
+      "image_id": 4535,
+      "file_name": "4535.tiff",
+      "ann_id": 937,
+      "class": "car",
+      "class_id": 5,
+      "error": "localization",
+      "area": 224.00002535999943,
+      "bbox_xyxy": [
+        247.99999722,
+        137.99999915,
+        263.99999958000006,
+        151.99999867
+      ],
+      "best_same_iou": 0.3801660164305024,
+      "best_same_score": 0.06419304261604945,
+      "best_any_iou": 0.3801660164305024,
+      "best_any_class": 5,
+      "best_any_score": 0.06419304261604945
+    },
+    {
+      "image_id": 4541,
+      "file_name": "4541.tiff",
+      "ann_id": 947,
+      "class": "car",
+      "class_id": 5,
+      "error": "miss",
+      "area": 273.0000257399998,
+      "bbox_xyxy": [
+        330.9999987,
+        144.99999891,
+        352.00000026,
+        157.99999916999997
+      ],
+      "best_same_iou": 0.0,
+      "best_same_score": 0.9334356983502706,
+      "best_any_iou": 0.0,
+      "best_any_class": 5,
+      "best_any_score": 0.9334356983502706
+    },
+    {
+      "image_id": 4541,
+      "file_name": "4541.tiff",
+      "ann_id": 948,
+      "class": "people",
+      "class_id": 14,
+      "error": "miss",
+      "area": 170.99997947999884,
+      "bbox_xyxy": [
+        131.99999856,
+        220.00000022,
+        140.99999712,
+        239.00000098
+      ],
+      "best_same_iou": 0.0,
+      "best_same_score": null,
+      "best_any_iou": 0.0,
+      "best_any_class": 5,
+      "best_any_score": 0.9334356983502706
+    },
+    {
+      "image_id": 4541,
+      "file_name": "4541.tiff",
+      "ann_id": 949,
+      "class": "e-bike",
+      "class_id": 8,
+      "error": "miss",
+      "area": 129.99998179999986,
+      "bbox_xyxy": [
+        132.99999839999998,
+        233.99999974000002,
+        142.99999680000002,
+        247.0
+      ],
+      "best_same_iou": 0.0,
+      "best_same_score": null,
+      "best_any_iou": 0.0,
+      "best_any_class": 5,
+      "best_any_score": 0.9334356983502706
+    },
+    {
+      "image_id": 4948,
+      "file_name": "4948.tiff",
+      "ann_id": 1031,
+      "class": "people",
+      "class_id": 14,
+      "error": "localization",
+      "area": 1844.9999999999982,
+      "bbox_xyxy": [
+        183.0,
+        85.00000128,
+        223.99999999999997,
+        130.00000128
+      ],
+      "best_same_iou": 0.49260263424126405,
+      "best_same_score": 0.6776969035466512,
+      "best_any_iou": 0.49260263424126405,
+      "best_any_class": 14,
+      "best_any_score": 0.6776969035466512
+    },
+    {
+      "image_id": 4948,
+      "file_name": "4948.tiff",
+      "ann_id": 1034,
+      "class": "people",
+      "class_id": 14,
+      "error": "localization",
+      "area": 3569.0000000000045,
+      "bbox_xyxy": [
+        369.0,
+        38.000001280000006,
+        412.00000000000006,
+        121.00000128
+      ],
+      "best_same_iou": 0.4991241457784866,
+      "best_same_score": 0.8128011226654053,
+      "best_any_iou": 0.4991241457784866,
+      "best_any_class": 14,
+      "best_any_score": 0.8128011226654053
+    }
+  ]
+}

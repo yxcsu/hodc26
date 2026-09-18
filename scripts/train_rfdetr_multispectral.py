@@ -32,6 +32,9 @@ _CUSTOM_MEAN: tuple[float, ...] | None = None
 _CUSTOM_STD: tuple[float, ...] | None = None
 _USE_SPECTRAL_ADAPTER = False
 _ADAPTER_ONLY = False
+_USE_RGB_RESIDUAL_STEM = False
+_RGB_RESIDUAL_INPUT_CHANNELS = 19
+_RGB_RESIDUAL_RANK = 4
 
 
 def _decode_multispectral(self: Any, image_id: int):
@@ -101,6 +104,20 @@ class DynamicNormalize:
         else:
             mean = [v for _, v in zip(range(channels), cycle(self.base_mean))]
             std = [v for _, v in zip(range(channels), cycle(self.base_std))]
+            # The 19-channel residual-stem dataset stores 16 globally-scaled
+            # HSI bands followed by the exact pseudo-RGB (5,8,13) image used by
+            # Phase A.  Keep the HSI cyclic normalization unchanged, but
+            # normalize the appended RGB channels exactly like the original
+            # 3-channel Phase-A input.  With a zero gate this makes the new stem
+            # behavior-preserving at initialization.
+            if _USE_RGB_RESIDUAL_STEM:
+                if channels != _RGB_RESIDUAL_INPUT_CHANNELS or channels != 19:
+                    raise ValueError(
+                        "RGB residual stem currently expects exactly 19 channels "
+                        "(16 HSI + 3 appended pseudo-RGB)."
+                    )
+                mean[-3:] = list(IMAGENET_MEAN)
+                std[-3:] = list(IMAGENET_STD)
         image = tvf.normalize(image, mean, std)
         if target is None:
             return image, None
@@ -156,6 +173,81 @@ def install_identity_spectral_adapter(patch_embeddings: torch.nn.Module, channel
         return self.projection(pixel_values).flatten(2).transpose(1, 2)
 
     patch_embeddings.forward = MethodType(forward_with_adapter, patch_embeddings)
+
+
+def configure_rgb_residual_stem(enabled: bool, input_channels: int = 19, rank: int = 4) -> None:
+    """Configure the behavior-preserving HSI->RGB residual stem globally."""
+    global _USE_RGB_RESIDUAL_STEM, _RGB_RESIDUAL_INPUT_CHANNELS, _RGB_RESIDUAL_RANK
+    _USE_RGB_RESIDUAL_STEM = bool(enabled)
+    _RGB_RESIDUAL_INPUT_CHANNELS = int(input_channels)
+    _RGB_RESIDUAL_RANK = int(rank)
+    if _USE_RGB_RESIDUAL_STEM:
+        if _RGB_RESIDUAL_INPUT_CHANNELS != 19:
+            raise ValueError("RGB residual stem requires 19 input channels (16 HSI + 3 pseudo-RGB)")
+        if _RGB_RESIDUAL_RANK <= 0:
+            raise ValueError("RGB residual rank must be positive")
+
+
+def install_rgb_residual_stem(
+    patch_embeddings: torch.nn.Module,
+    input_channels: int = 19,
+    rank: int = 4,
+) -> None:
+    """Keep the original 3ch projection and add a zero-gated 16->rank->3 HSI residual."""
+    if hasattr(patch_embeddings, "spectral_residual_down"):
+        return
+    if input_channels != 19:
+        raise ValueError("RGB residual stem currently requires 16 HSI + 3 pseudo-RGB channels")
+    if int(patch_embeddings.projection.in_channels) != 3:
+        raise ValueError(
+            "RGB residual stem must be attached to an original 3-channel patch projection, "
+            f"got in_channels={patch_embeddings.projection.in_channels}"
+        )
+
+    down = torch.nn.Conv2d(16, rank, kernel_size=1, bias=True)
+    up = torch.nn.Conv2d(rank, 3, kernel_size=1, bias=True)
+    torch.nn.init.kaiming_uniform_(down.weight, a=5**0.5)
+    torch.nn.init.zeros_(down.bias)
+    torch.nn.init.kaiming_uniform_(up.weight, a=5**0.5)
+    torch.nn.init.zeros_(up.bias)
+    patch_embeddings.add_module("spectral_residual_down", down)
+    patch_embeddings.add_module("spectral_residual_up", up)
+    patch_embeddings.register_parameter("spectral_residual_gate", torch.nn.Parameter(torch.zeros(())))
+    patch_embeddings.residual_input_channels = input_channels
+    patch_embeddings.num_channels = input_channels
+
+    def forward_with_rgb_residual(self: Any, pixel_values: torch.Tensor) -> torch.Tensor:
+        num_channels = int(pixel_values.shape[1])
+        if num_channels != int(self.residual_input_channels):
+            raise ValueError(
+                f"RGB residual stem expected {self.residual_input_channels} channels but got {num_channels}."
+            )
+        hsi = pixel_values[:, :16]
+        pseudo_rgb = pixel_values[:, 16:19]
+        residual = self.spectral_residual_up(
+            torch.nn.functional.gelu(self.spectral_residual_down(hsi))
+        )
+        mixed_rgb = pseudo_rgb + torch.tanh(self.spectral_residual_gate) * residual
+        return self.projection(mixed_rgb).flatten(2).transpose(1, 2)
+
+    patch_embeddings.forward = MethodType(forward_with_rgb_residual, patch_embeddings)
+
+
+def verify_rgb_residual_stem(patch_embeddings: torch.nn.Module, input_channels: int = 19) -> None:
+    """Assert gate=0 gives exactly the original pseudo-RGB patch-projection output."""
+    device = patch_embeddings.projection.weight.device
+    dtype = patch_embeddings.projection.weight.dtype
+    x = torch.rand(1, input_channels, 64, 64, device=device, dtype=dtype)
+    with torch.no_grad():
+        expected = patch_embeddings.projection(x[:, 16:19]).flatten(2).transpose(1, 2)
+        actual = patch_embeddings(x)
+    max_diff = float((expected - actual).abs().max().item())
+    gate = float(patch_embeddings.spectral_residual_gate.detach().item())
+    print(f"rgb_residual_stem_gate={gate:.9g} identity_maxdiff={max_diff:.9g}", flush=True)
+    if abs(gate) > 1e-12 or max_diff > 1e-6:
+        raise RuntimeError(
+            f"RGB residual stem changed Phase-A behavior at initialization: gate={gate} maxdiff={max_diff}"
+        )
 
 
 def verify_identity_adapter(patch_embeddings: torch.nn.Module, channels: int) -> None:
@@ -266,6 +358,7 @@ def install_multispectral_patches() -> None:
         target_channels = int(getattr(model_config, "num_channels", 3))
         deferred_state = None
         adapter_in_checkpoint = False
+        residual_in_checkpoint = False
         init_config = model_config
 
         # RF-DETR v1.10.1 can adapt a 3-channel checkpoint to N channels, but it
@@ -274,13 +367,22 @@ def install_multispectral_patches() -> None:
         # same-channel local checkpoint, defer weight loading until after the
         # projection has been adapted below.
         pretrain_weights = getattr(model_config, "pretrain_weights", None)
-        if target_channels != 3 and pretrain_weights:
+        if pretrain_weights:
             pretrain_path = Path(str(pretrain_weights))
             if pretrain_path.exists():
                 checkpoint = torch.load(pretrain_path, map_location="cpu", weights_only=False)
                 state = checkpoint.get("model") if isinstance(checkpoint, dict) else None
                 projection_key = "backbone.0.encoder.encoder.embeddings.patch_embeddings.projection.weight"
-                if isinstance(state, dict) and projection_key in state:
+                if isinstance(state, dict):
+                    residual_in_checkpoint = any("spectral_residual_" in key for key in state)
+                if _USE_RGB_RESIDUAL_STEM and residual_in_checkpoint:
+                    deferred_state = state
+                    if hasattr(model_config, "model_copy"):
+                        init_config = model_config.model_copy(update={"pretrain_weights": None})
+                    else:
+                        init_config = copy.deepcopy(model_config)
+                        init_config.pretrain_weights = None
+                elif target_channels != 3 and isinstance(state, dict) and projection_key in state:
                     checkpoint_channels = int(state[projection_key].shape[1])
                     if checkpoint_channels == target_channels:
                         deferred_state = state
@@ -292,11 +394,37 @@ def install_multispectral_patches() -> None:
                             init_config.pretrain_weights = None
 
         original_init(self, init_config, train_config)
-        if target_channels == 3:
-            return
 
         backbone = self.model.backbone[0]
         patch_embeddings = backbone.encoder.encoder.embeddings.patch_embeddings
+
+        if _USE_RGB_RESIDUAL_STEM:
+            install_rgb_residual_stem(
+                patch_embeddings,
+                input_channels=_RGB_RESIDUAL_INPUT_CHANNELS,
+                rank=_RGB_RESIDUAL_RANK,
+            )
+            if deferred_state is not None:
+                from rfdetr.models.weights import interpolate_position_embeddings
+
+                interpolate_position_embeddings(
+                    deferred_state,
+                    int(getattr(model_config, "positional_encoding_size")),
+                )
+                incompatible = self.model.load_state_dict(deferred_state, strict=False)
+                if incompatible.missing_keys or incompatible.unexpected_keys:
+                    raise RuntimeError(
+                        "Deferred RGB-residual checkpoint load was incomplete: "
+                        f"missing={incompatible.missing_keys[:10]} "
+                        f"unexpected={incompatible.unexpected_keys[:10]}"
+                    )
+            if not residual_in_checkpoint:
+                verify_rgb_residual_stem(patch_embeddings, _RGB_RESIDUAL_INPUT_CHANNELS)
+            return
+
+        if target_channels == 3:
+            return
+
         projection = patch_embeddings.projection
         if int(projection.in_channels) != target_channels:
             new_projection = copy.deepcopy(projection)
@@ -354,7 +482,7 @@ def main() -> None:
     parser.add_argument("--resolution", type=int, default=512)
     parser.add_argument("--workers", type=int, default=4)
     parser.add_argument("--device", default="cuda:0")
-    parser.add_argument("--channels", type=int, default=16, choices=(3, 16))
+    parser.add_argument("--channels", type=int, default=16, choices=(3, 16, 19))
     parser.add_argument(
         "--pretrain",
         type=Path,
@@ -380,6 +508,12 @@ def main() -> None:
     parser.add_argument("--normalization-stats", type=Path, default=None)
     parser.add_argument("--spectral-adapter", action="store_true")
     parser.add_argument(
+        "--rgb-residual-stem",
+        action="store_true",
+        help="Use 19ch input (16 HSI + appended pseudo-RGB) with a zero-gated 16->rank->3 residual into the original 3ch path.",
+    )
+    parser.add_argument("--rgb-residual-rank", type=int, default=4)
+    parser.add_argument(
         "--adapter-only",
         action="store_true",
         help="Freeze the detector and train only the identity-initialized 1x1 spectral adapter.",
@@ -390,6 +524,9 @@ def main() -> None:
     global _USE_SPECTRAL_ADAPTER, _ADAPTER_ONLY
     _USE_SPECTRAL_ADAPTER = bool(args.spectral_adapter or args.adapter_only)
     _ADAPTER_ONLY = bool(args.adapter_only)
+    configure_rgb_residual_stem(args.rgb_residual_stem, args.channels, args.rgb_residual_rank)
+    if args.rgb_residual_stem and (_USE_SPECTRAL_ADAPTER or _ADAPTER_ONLY):
+        raise ValueError("--rgb-residual-stem cannot be combined with --spectral-adapter/--adapter-only")
     configure_normalization(args.normalization, args.normalization_stats)
 
     if args.channels != 3:
@@ -404,7 +541,7 @@ def main() -> None:
     # Constructing the model also exercises the official 3ch->16ch pretrained
     # patch-embedding adaptation path.
     model_kwargs: dict[str, Any] = {
-        "num_channels": args.channels,
+        "num_channels": 3 if args.rgb_residual_stem else args.channels,
         "resolution": args.resolution,
     }
     deferred_outer_pretrain: str | None = None
@@ -417,7 +554,7 @@ def main() -> None:
             projection_key = "backbone.0.encoder.encoder.embeddings.patch_embeddings.projection.weight"
             if isinstance(state, dict) and projection_key in state:
                 checkpoint_channels = int(state[projection_key].shape[1])
-        if checkpoint_channels == args.channels and args.channels != 3:
+        if checkpoint_channels == args.channels and args.channels != 3 and not args.rgb_residual_stem:
             model_kwargs["pretrain_weights"] = None
             deferred_outer_pretrain = pretrain_path
         else:
@@ -425,7 +562,10 @@ def main() -> None:
     model = RFDETRSmall(**model_kwargs)
     if deferred_outer_pretrain is not None:
         model.model_config.pretrain_weights = deferred_outer_pretrain
-    print(f"model channels={model.model_config.num_channels} resolution={model.model_config.resolution}")
+    print(
+        f"model channels={model.model_config.num_channels} input_channels={args.channels} "
+        f"rgb_residual_stem={args.rgb_residual_stem} resolution={model.model_config.resolution}"
+    )
     print(f"means={len(model.means)} stds={len(model.stds)}")
 
     if args.smoke_dataset_only:

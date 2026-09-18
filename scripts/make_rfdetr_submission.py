@@ -15,9 +15,11 @@ from rfdetr.models.weights import interpolate_position_embeddings
 from rfdetr.utilities.tensors import NestedTensor, make_collate_fn
 
 from train_rfdetr_multispectral import (
+    configure_rgb_residual_stem,
     configure_normalization,
     install_identity_spectral_adapter,
     install_multispectral_patches,
+    install_rgb_residual_stem,
 )
 
 
@@ -64,22 +66,33 @@ def main() -> None:
     parser.add_argument("--normalization-stats", type=Path, default=None)
     args = parser.parse_args()
 
+    checkpoint = torch.load(args.checkpoint, map_location="cpu", weights_only=False)
+    state = checkpoint["model"].copy()
+    residual_keys = [key for key in state if "spectral_residual_" in key]
+    residual_rank = None
+    if residual_keys:
+        down_key = next(key for key in residual_keys if key.endswith("spectral_residual_down.weight"))
+        residual_rank = int(state[down_key].shape[0])
+        configure_rgb_residual_stem(True, args.channels, residual_rank)
+    else:
+        configure_rgb_residual_stem(False)
     configure_normalization(args.normalization, args.normalization_stats)
     if args.channels != 3:
         install_multispectral_patches()
 
     model = RFDETRSmall(
-        num_channels=args.channels,
+        num_channels=3 if residual_keys else args.channels,
         num_classes=args.classes,
         resolution=args.resolution,
         pretrain_weights=None,
     )
-    checkpoint = torch.load(args.checkpoint, map_location="cpu", weights_only=False)
-    state = checkpoint["model"].copy()
     interpolate_position_embeddings(
         state,
         int(model.model_config.positional_encoding_size),
     )
+    if residual_keys:
+        patch_embeddings = model.model.model.backbone[0].encoder.encoder.embeddings.patch_embeddings
+        install_rgb_residual_stem(patch_embeddings, args.channels, residual_rank or 4)
     adapter_keys = [key for key in state if "spectral_adapter." in key]
     if adapter_keys:
         patch_embeddings = model.model.model.backbone[0].encoder.encoder.embeddings.patch_embeddings

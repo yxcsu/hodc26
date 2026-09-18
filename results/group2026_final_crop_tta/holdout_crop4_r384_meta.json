@@ -1,0 +1,27 @@
+{
+  "checkpoint": "runs/rfdetr_group2026_v2_gain_only_10ep/checkpoint_best_total.pth",
+  "dataset": "prepared/rfdetr_hsi16_group2026_holdout",
+  "split": "valid",
+  "resolution": 384,
+  "crop_fraction": 0.6,
+  "nominal_overlap_fraction_of_full_image": 0.19999999999999996,
+  "responsibility": "box center assigned to TL/TR/BL/BR by full-image W/2,H/2",
+  "channels": 16,
+  "classes": 18,
+  "confidence_threshold": 0.001,
+  "top_k_per_crop_before_ownership": 300,
+  "top_k_per_image_after_ownership": 300,
+  "normalization": "imagenet-cyclic",
+  "normalization_stats": null,
+  "spectral_adapter": false,
+  "images": 300,
+  "crop_views": [
+    "tl",
+    "tr",
+    "bl",
+    "br"
+  ],
+  "raw_kept": 357506,
+  "ownership_rejected": 172332,
+  "detections": 89645
+}

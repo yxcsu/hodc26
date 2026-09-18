@@ -54,6 +54,7 @@ Do not repeat these as first-line suggestions unless the method is materially di
 
 - confidence/top-K sweeps: only ~0.001 local mAP effect;
 - horizontal-flip six-view TTA: no consistent >=0.005 gain over three-scale TTA;
+- 2x2 60%-crop TTA added to three-scale WBF: only +0.00184 val / +0.00334 holdout overall and +0.00342 / +0.00390 small AP, below the predeclared threshold;
 - non-uniform 384/448/512 WBF weights: worse than equal weights;
 - float32 clip(raw/320) + cyclic ImageNet normalization: ~0.022 worse than uint8 baseline on val and holdout;
 - float32 + train-fold per-band statistics: better matched than cyclic ImageNet stats but still below uint8 baseline;
