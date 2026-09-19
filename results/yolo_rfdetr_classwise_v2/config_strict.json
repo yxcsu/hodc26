@@ -1,0 +1,340 @@
+{
+  "baseline_tag": "13b",
+  "tolerance": 0.0,
+  "candidate_specs": {
+    "13": {
+      "yolo_weight": 1.3,
+      "rfdetr_weight": 1.0,
+      "iou": 0.63
+    },
+    "13b": {
+      "yolo_weight": 1.3,
+      "rfdetr_weight": 1.0,
+      "iou": 0.64
+    },
+    "13c": {
+      "yolo_weight": 1.3,
+      "rfdetr_weight": 1.0,
+      "iou": 0.65
+    },
+    "13d": {
+      "yolo_weight": 1.3,
+      "rfdetr_weight": 1.0,
+      "iou": 0.66
+    },
+    "14": {
+      "yolo_weight": 1.4,
+      "rfdetr_weight": 1.0,
+      "iou": 0.64
+    },
+    "14b": {
+      "yolo_weight": 1.4,
+      "rfdetr_weight": 1.0,
+      "iou": 0.66
+    },
+    "15": {
+      "yolo_weight": 1.5,
+      "rfdetr_weight": 1.0,
+      "iou": 0.65
+    },
+    "19": {
+      "yolo_weight": 1.9,
+      "rfdetr_weight": 1.0,
+      "iou": 0.66
+    },
+    "13e": {
+      "yolo_weight": 1.3,
+      "rfdetr_weight": 1.0,
+      "iou": 0.6
+    },
+    "13f": {
+      "yolo_weight": 1.3,
+      "rfdetr_weight": 1.0,
+      "iou": 0.65
+    },
+    "13g": {
+      "yolo_weight": 1.3,
+      "rfdetr_weight": 1.0,
+      "iou": 0.66
+    },
+    "14c": {
+      "yolo_weight": 1.4,
+      "rfdetr_weight": 1.0,
+      "iou": 0.63
+    },
+    "14d": {
+      "yolo_weight": 1.4,
+      "rfdetr_weight": 1.0,
+      "iou": 0.65
+    },
+    "12_66": {
+      "yolo_weight": 1.2,
+      "rfdetr_weight": 1.0,
+      "iou": 0.66
+    },
+    "19b": {
+      "yolo_weight": 1.9,
+      "rfdetr_weight": 1.0,
+      "iou": 0.65
+    },
+    "22_066": {
+      "yolo_weight": 2.2,
+      "rfdetr_weight": 1.0,
+      "iou": 0.66
+    }
+  },
+  "classes": {
+    "0": {
+      "class_id": 0,
+      "class_name": "apple",
+      "tag": "14d",
+      "yolo_weight": 1.4,
+      "rfdetr_weight": 1.0,
+      "iou": 0.65,
+      "val_ap": 0.7918507296874211,
+      "holdout_ap": 0.769539336866622,
+      "baseline_val_ap": 0.7915951995577492,
+      "baseline_holdout_ap": 0.7695303268162709,
+      "val_delta": 0.00025553012967194366,
+      "holdout_delta": 9.010050351143661e-06
+    },
+    "1": {
+      "class_id": 1,
+      "class_name": "apple_plastic",
+      "tag": "19b",
+      "yolo_weight": 1.9,
+      "rfdetr_weight": 1.0,
+      "iou": 0.65,
+      "val_ap": 0.7940362042830276,
+      "holdout_ap": 0.781939922413399,
+      "baseline_val_ap": 0.7937586611122407,
+      "baseline_holdout_ap": 0.776357821407048,
+      "val_delta": 0.00027754317078687585,
+      "holdout_delta": 0.005582101006351037
+    },
+    "2": {
+      "class_id": 2,
+      "class_name": "badminton",
+      "tag": "22_066",
+      "yolo_weight": 2.2,
+      "rfdetr_weight": 1.0,
+      "iou": 0.66,
+      "val_ap": 0.7676602201630358,
+      "holdout_ap": 0.7700682161741034,
+      "baseline_val_ap": 0.7653719524766053,
+      "baseline_holdout_ap": 0.7665287422139968,
+      "val_delta": 0.002288267686430534,
+      "holdout_delta": 0.003539473960106565
+    },
+    "3": {
+      "class_id": 3,
+      "class_name": "banana",
+      "tag": "12_66",
+      "yolo_weight": 1.2,
+      "rfdetr_weight": 1.0,
+      "iou": 0.66,
+      "val_ap": 0.7728809012839905,
+      "holdout_ap": 0.7387431752296377,
+      "baseline_val_ap": 0.7709092225820072,
+      "baseline_holdout_ap": 0.7386819686449841,
+      "val_delta": 0.001971678701983226,
+      "holdout_delta": 6.120658465358364e-05
+    },
+    "4": {
+      "class_id": 4,
+      "class_name": "banana_plastic",
+      "tag": "13g",
+      "yolo_weight": 1.3,
+      "rfdetr_weight": 1.0,
+      "iou": 0.66,
+      "val_ap": 0.7965332959472283,
+      "holdout_ap": 0.8359729012030006,
+      "baseline_val_ap": 0.7965332959472283,
+      "baseline_holdout_ap": 0.8359729012030006,
+      "val_delta": 0.0,
+      "holdout_delta": 0.0
+    },
+    "5": {
+      "class_id": 5,
+      "class_name": "car",
+      "tag": "13f",
+      "yolo_weight": 1.3,
+      "rfdetr_weight": 1.0,
+      "iou": 0.65,
+      "val_ap": 0.43981134297450897,
+      "holdout_ap": 0.46777510206814404,
+      "baseline_val_ap": 0.4390959856543245,
+      "baseline_holdout_ap": 0.4671942860234317,
+      "val_delta": 0.0007153573201844621,
+      "holdout_delta": 0.000580816044712329
+    },
+    "6": {
+      "class_id": 6,
+      "class_name": "car_toy",
+      "tag": "13e",
+      "yolo_weight": 1.3,
+      "rfdetr_weight": 1.0,
+      "iou": 0.6,
+      "val_ap": 0.735957344794192,
+      "holdout_ap": 0.7481524091161834,
+      "baseline_val_ap": 0.735957344794192,
+      "baseline_holdout_ap": 0.7480201891272672,
+      "val_delta": 0.0,
+      "holdout_delta": 0.00013221998891621567
+    },
+    "7": {
+      "class_id": 7,
+      "class_name": "charger_head",
+      "tag": "13g",
+      "yolo_weight": 1.3,
+      "rfdetr_weight": 1.0,
+      "iou": 0.66,
+      "val_ap": 0.74155219009371,
+      "holdout_ap": 0.7472704565810271,
+      "baseline_val_ap": 0.74155219009371,
+      "baseline_holdout_ap": 0.7444524824759243,
+      "val_delta": 0.0,
+      "holdout_delta": 0.0028179741051027607
+    },
+    "8": {
+      "class_id": 8,
+      "class_name": "e-bike",
+      "tag": "13f",
+      "yolo_weight": 1.3,
+      "rfdetr_weight": 1.0,
+      "iou": 0.65,
+      "val_ap": 0.41823836681372534,
+      "holdout_ap": 0.6113955656918139,
+      "baseline_val_ap": 0.41680760060424715,
+      "baseline_holdout_ap": 0.6112084930879499,
+      "val_delta": 0.0014307662094781848,
+      "holdout_delta": 0.00018707260386396918
+    },
+    "9": {
+      "class_id": 9,
+      "class_name": "egg",
+      "tag": "22_066",
+      "yolo_weight": 2.2,
+      "rfdetr_weight": 1.0,
+      "iou": 0.66,
+      "val_ap": 0.791980554245575,
+      "holdout_ap": 0.7779957200642046,
+      "baseline_val_ap": 0.7797060990159758,
+      "baseline_holdout_ap": 0.7743650503752159,
+      "val_delta": 0.012274455229599246,
+      "holdout_delta": 0.00363066968898873
+    },
+    "10": {
+      "class_id": 10,
+      "class_name": "egg_plastic",
+      "tag": "15",
+      "yolo_weight": 1.5,
+      "rfdetr_weight": 1.0,
+      "iou": 0.65,
+      "val_ap": 0.8071143094239734,
+      "holdout_ap": 0.7924852431358204,
+      "baseline_val_ap": 0.8064926048412107,
+      "baseline_holdout_ap": 0.7924500433111396,
+      "val_delta": 0.0006217045827627832,
+      "holdout_delta": 3.51998246808094e-05
+    },
+    "11": {
+      "class_id": 11,
+      "class_name": "egg_wood",
+      "tag": "12_66",
+      "yolo_weight": 1.2,
+      "rfdetr_weight": 1.0,
+      "iou": 0.66,
+      "val_ap": 0.7896681274861712,
+      "holdout_ap": 0.7316945392018195,
+      "baseline_val_ap": 0.7879780524636315,
+      "baseline_holdout_ap": 0.7313690841577609,
+      "val_delta": 0.0016900750225397054,
+      "holdout_delta": 0.0003254550440585646
+    },
+    "12": {
+      "class_id": 12,
+      "class_name": "orange",
+      "tag": "14d",
+      "yolo_weight": 1.4,
+      "rfdetr_weight": 1.0,
+      "iou": 0.65,
+      "val_ap": 0.8841905619133342,
+      "holdout_ap": 0.7957257581420316,
+      "baseline_val_ap": 0.8841905619133342,
+      "baseline_holdout_ap": 0.7957257581420316,
+      "val_delta": 0.0,
+      "holdout_delta": 0.0
+    },
+    "13": {
+      "class_id": 13,
+      "class_name": "orange_plastic",
+      "tag": "12_66",
+      "yolo_weight": 1.2,
+      "rfdetr_weight": 1.0,
+      "iou": 0.66,
+      "val_ap": 0.8053599309206283,
+      "holdout_ap": 0.7998497725230398,
+      "baseline_val_ap": 0.8039119111186481,
+      "baseline_holdout_ap": 0.7997057932128281,
+      "val_delta": 0.0014480198019801716,
+      "holdout_delta": 0.00014397931021170596
+    },
+    "14": {
+      "class_id": 14,
+      "class_name": "people",
+      "tag": "15",
+      "yolo_weight": 1.5,
+      "rfdetr_weight": 1.0,
+      "iou": 0.65,
+      "val_ap": 0.2965218072302742,
+      "holdout_ap": 0.4509222469235307,
+      "baseline_val_ap": 0.29624374709018053,
+      "baseline_holdout_ap": 0.4472566054592343,
+      "val_delta": 0.0002780601400936833,
+      "holdout_delta": 0.003665641464296432
+    },
+    "15": {
+      "class_id": 15,
+      "class_name": "rubik",
+      "tag": "19b",
+      "yolo_weight": 1.9,
+      "rfdetr_weight": 1.0,
+      "iou": 0.65,
+      "val_ap": 0.7946131527324413,
+      "holdout_ap": 0.7815794406789622,
+      "baseline_val_ap": 0.786478261198067,
+      "baseline_holdout_ap": 0.780170414798524,
+      "val_delta": 0.0081348915343743,
+      "holdout_delta": 0.0014090258804382305
+    },
+    "16": {
+      "class_id": 16,
+      "class_name": "stone_block",
+      "tag": "13b",
+      "yolo_weight": 1.3,
+      "rfdetr_weight": 1.0,
+      "iou": 0.64,
+      "val_ap": 0.567388902488761,
+      "holdout_ap": 0.48029829980272665,
+      "baseline_val_ap": 0.567388902488761,
+      "baseline_holdout_ap": 0.48029829980272665,
+      "val_delta": 0.0,
+      "holdout_delta": 0.0
+    },
+    "17": {
+      "class_id": 17,
+      "class_name": "table_tennis",
+      "tag": "13g",
+      "yolo_weight": 1.3,
+      "rfdetr_weight": 1.0,
+      "iou": 0.66,
+      "val_ap": 0.7005588667130574,
+      "holdout_ap": 0.6986556719849591,
+      "baseline_val_ap": 0.7005588667130574,
+      "baseline_holdout_ap": 0.6986556719849591,
+      "val_delta": 0.0,
+      "holdout_delta": 0.0
+    }
+  }
+}

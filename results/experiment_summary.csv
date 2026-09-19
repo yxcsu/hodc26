@@ -21,3 +21,5 @@ rfdetr_group42_v2_adapter,RF-DETR Small,native_hsi16,10,384,16,0.683614,0.669159
 yolo3_rfdetr2_wbf_15_065,YOLO11s+RF-DETR Small,native_hsi16 ensemble,tt,384+448+512,16,0.7035137998,0.7076211483,0.64458,,global WBF 1.5:1 IoU 0.65; +0.017/+0.026 vs best single; first cross-model submission
 yolo3_rfdetr2_classwise_strict,YOLO11s+RF-DETR Small,native_hsi16 ensemble,tt,384+448+512,16,0.704382,0.709693,,,"class-wise per-class WBF params from 8 candidates, both-splits non-decreasing"
 yolo3_rfdetr2_classwise_tol003,YOLO11s+RF-DETR Small,native_hsi16 ensemble,tt,384+448+512,16,0.7055254274,0.709547,,0.64630,,class-wise tol 0.003; current best Public LB; tol 0.005+ unchanged (plateau)
+yolo3_rfdetr2_classwise2_tol003,YOLO11s+RF-DETR Small,native_hsi16 ensemble,tt,384+448+512,16,0.7062650010,0.7099388046,,,"expanded 16-candidate class-wise pool; +0.00074/+0.00039 over submitted; below +0.005 threshold, NOT submitted"
+yolo3_rfdetr2_classwise2_strict,YOLO11s+RF-DETR Small,native_hsi16 ensemble,tt,384+448+512,16,0.705329,0.710004,,,expanded pool strict variant; stored for future submission

@@ -434,6 +434,28 @@ The class-wise test submission `yolo_rfdetr_classwise_tol003.csv` passed the
 full local validator (1000/1000 test images, 18 legal classes, 0 NaN/Inf,
 0 invalid/out-of-bounds boxes, 0 duplicate row ids, <=300 detections/image).
 
+### 9.5 Expanded 16-candidate pool (2026-09-19, not submitted)
+
+The candidate pool was extended with 8 finer configurations
+(`results/yolo_rfdetr_class_candidates2/`, generator
+`scripts/gen_classwise_candidates2.sh`): `13e` (1.3, 0.60), `13f` (1.3, 0.65),
+`13g` (1.3, 0.66), `14c` (1.4, 0.63), `14d` (1.4, 0.65), `12_66` (1.2, 0.66),
+`19b` (1.9, 0.65), `22_066` (2.2, 0.66).
+
+| Variant | Val mAP50-95 | Holdout mAP50-95 |
+|---|---:|---:|
+| previous tol 0.003 (8 candidates, submitted, LB 0.64630) | 0.705525 | 0.709547 |
+| strict, 16 candidates | 0.705329 | **0.710004** |
+| tol 0.003, 16 candidates | **0.706265** | 0.709939 |
+
+The expansion lifts val by `+0.00074` and holdout by `+0.00039` over the
+submitted config, mainly from `egg` (`22_066`, +0.0123/+0.0036),
+`badminton` (`22_066`), and `egg_wood`/`orange_plastic` (`12_66`). This is
+roughly 7x below the predeclared `+0.005` consistent val+holdout
+submission threshold, so **no submission was spent**; the configs and
+scores are stored under `results/yolo_rfdetr_classwise_v2/` for a future
+free-submission opportunity.
+
 ## 10. Known implementation pitfalls already fixed
 
 The following issues were found during development and should not be reintroduced:

@@ -308,6 +308,15 @@
       "holdout_map50_95": 0.709547,
       "public_lb": 0.6463,
       "notes": "current best Public LB; tolerance 0.005/0.01/0.02 selections identical (plateau); no confidence/top-K trimming needed"
+    },
+    {
+      "name": "yolo3_rfdetr2_classwise2_tol003",
+      "model": "YOLO11s HSI16 + RF-DETR Small-v2 HSI16 TTA",
+      "fusion": "per-class WBF from 16-candidate pool (adds 1.2/0.66, 1.3/0.60, 1.3/0.65, 1.3/0.66, 1.4/0.63, 1.4/0.65, 1.9/0.65, 2.2/0.66), tolerance 0.003",
+      "local_val_map50_95": 0.706265001,
+      "holdout_map50_95": 0.7099388046,
+      "public_lb": null,
+      "notes": "+0.00074/+0.00039 over submitted classwise tol003; below +0.005 submission threshold, kept for future submission"
     }
   ],
   "completed_findings": {
