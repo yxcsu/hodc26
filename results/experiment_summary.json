@@ -1,5 +1,5 @@
 {
-  "updated": "2026-09-17",
+  "updated": "2026-09-19",
   "competition": "hyperspectral-object-detection-challenge-2026",
   "dataset": {
     "train_images": 3000,
@@ -14,21 +14,31 @@
     },
     "annotation_audit": {
       "degenerate_boxes_removed": 41,
-      "severe_degenerate_image_ids": [298, 423, 953, 1590, 1974, 3294, 4763],
-      "out_of_bounds_image_ids": [1989, 3093]
+      "severe_degenerate_image_ids": [
+        298,
+        423,
+        953,
+        1590,
+        1974,
+        3294,
+        4763
+      ],
+      "out_of_bounds_image_ids": [
+        1989,
+        3093
+      ]
     }
   },
   "best_public_lb": {
-    "score": 0.60617,
-    "experiment": "rfdetr_smallv2_tta",
-    "submission_ref": 56281009
+    "score": 0.6463,
+    "experiment": "yolo3_rfdetr2_classwise_tol003",
+    "submission": "submissions/yolo_rfdetr_classwise_tol003.csv"
   },
   "best_local": {
-    "experiment": "rfdetr_smallv2_tta",
-    "validation_map50_95": 0.692842109055644,
-    "holdout_map50_95": 0.6900738337207937,
-    "public_lb": 0.60617,
-    "submission_ref": 56281009
+    "experiment": "yolo3_rfdetr2_classwise_tol003",
+    "validation_map50_95": 0.7055254273864818,
+    "holdout_map50_95": 0.709547,
+    "public_lb": 0.6463
   },
   "experiments": [
     {
@@ -94,8 +104,8 @@
       "resolution": 512,
       "multi_scale": true,
       "batch": 16,
-      "lr": 0.00005,
-      "lr_encoder": 0.000075,
+      "lr": 5e-05,
+      "lr_encoder": 7.5e-05,
       "best_zero_based_epoch": 7,
       "local_val_map50_95": 0.6226434707641602,
       "holdout_map50_95": 0.6124367713928223
@@ -109,11 +119,14 @@
       "preserve_aspect_ratio": true,
       "multi_scale": false,
       "batch": 16,
-      "lr": 0.00003,
-      "lr_encoder": 0.000015,
+      "lr": 3e-05,
+      "lr_encoder": 1.5e-05,
       "queries": 300,
       "spectral_augmentation": {
-        "global_gain": [0.95, 1.05],
+        "global_gain": [
+          0.95,
+          1.05
+        ],
         "spectral_tilt": 0.03,
         "gaussian_noise_sigma": 0.0002
       },
@@ -133,7 +146,11 @@
       "model": "RF-DETR Small",
       "input": "native_hsi16",
       "single_model_tta": true,
-      "short_side_resolutions": [384, 448, 512],
+      "short_side_resolutions": [
+        384,
+        448,
+        512
+      ],
       "fusion": {
         "method": "class-wise WBF",
         "iou_threshold": 0.7
@@ -234,7 +251,10 @@
       "resolution": 384,
       "multi_scale": false,
       "spectral_augmentation": {
-        "global_gain": [0.95, 1.05],
+        "global_gain": [
+          0.95,
+          1.05
+        ],
         "spectral_tilt": 0.03,
         "gaussian_noise_sigma": 0.0002
       },
@@ -248,7 +268,10 @@
       "resolution": 384,
       "multi_scale": false,
       "spectral_augmentation": {
-        "global_gain": [0.95, 1.05],
+        "global_gain": [
+          0.95,
+          1.05
+        ],
         "spectral_tilt": 0.0,
         "gaussian_noise_sigma": 0.0
       },
@@ -267,6 +290,24 @@
       "local_val_map50_95": 0.683614,
       "holdout_map50_95": 0.669159,
       "conclusion": "worse than no-adapter gain-only control"
+    },
+    {
+      "name": "yolo3_rfdetr2_wbf_15_065",
+      "model": "YOLO11s HSI16 + RF-DETR Small-v2 HSI16 TTA",
+      "fusion": "global WBF yolo_weight=1.5 rfdetr_weight=1.0 IoU 0.65",
+      "local_val_map50_95": 0.7035137998,
+      "holdout_map50_95": 0.7076211483,
+      "public_lb": 0.64458,
+      "notes": "first cross-model submission; +0.017/+0.026 over best single model"
+    },
+    {
+      "name": "yolo3_rfdetr2_classwise_tol003",
+      "model": "YOLO11s HSI16 + RF-DETR Small-v2 HSI16 TTA",
+      "fusion": "per-class WBF parameters selected from 8 stable candidates (baseline 13b=1.3:1 IoU 0.64), tolerance 0.003",
+      "local_val_map50_95": 0.7055254273864818,
+      "holdout_map50_95": 0.709547,
+      "public_lb": 0.6463,
+      "notes": "current best Public LB; tolerance 0.005/0.01/0.02 selections identical (plateau); no confidence/top-K trimming needed"
     }
   ],
   "completed_findings": {
@@ -278,7 +319,8 @@
     "hflip": "no consistent >=0.005 gain",
     "weighted_wbf": "equal 1:1:1 scale weights remain best",
     "gain_only": "slight ~0.002 local improvement, below submission threshold",
-    "spectral_adapter": "simple identity full-rank 1x1 adapter is worse than the no-adapter control"
+    "spectral_adapter": "simple identity full-rank 1x1 adapter is worse than the no-adapter control",
+    "cross_model_wbf": "YOLO+RF-DETR class-wise WBF ensemble lifts val/holdout by ~+0.02 and Public LB 0.60617 -> 0.64458 (global 1.5:1 IoU 0.65) -> 0.64630 (class-wise tol 0.003)"
   },
   "primary_open_problem": "The remaining opportunity is not confidence tuning or simple preprocessing. Prioritize small-object localization and recurrent weak classes (stone_block, people, car, unstable e-bike), detector complementarity, and more structured spectral modeling while retaining the externally verified three-scale TTA."
 }

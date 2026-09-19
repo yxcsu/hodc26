@@ -1,6 +1,6 @@
 # HODC26 Experiment Report
 
-Last updated: 2026-09-17
+Last updated: 2026-09-19
 
 This document summarizes the experiments performed for the Kaggle **Hyperspectral Object Detection Challenge 2026**. It is intended to be sufficiently explicit for another researcher or AI system to audit the current approach, identify failure modes, and propose stronger methods.
 
@@ -358,7 +358,83 @@ over three-scale TTA is only `+0.00184 / +0.00334` overall and
 `+0.005` overall and `+0.01` small-AP thresholds. This crop-TTA route is
 therefore rejected as a submission candidate.
 
-## 9. Known implementation pitfalls already fixed
+## 9. Cross-model YOLO + RF-DETR WBF ensemble (2026-09-18/19)
+
+The two strongest models were fused: YOLO11s native HSI16 (group-2026
+training) and RF-DETR Small-v2 HSI16 (group-2026 split, 3-scale TTA
+384/448/512). Both produce prediction CSVs on the same validation/holdout
+images; fusion is class-wise Weighted Boxes Fusion with a YOLO weight and an
+IoU matching threshold, RF-DETR weight fixed at 1.0.
+
+Baselines (best single model, group-2026):
+
+- YOLO val `0.684876` / holdout `0.686274`;
+- RF-DETR TTA val `0.686540` / holdout `0.681814`.
+
+### 9.1 Global weight/IoU sweep
+
+A global sweep over YOLO weight `1.0..2.0` x IoU `0.60..0.70`
+(`results/yolo_rfdetr_wbf_refine/summary.csv`, 72 configs passing a
+`+0.005 min-gain` gate on both splits) found a broad plateau near
+`val ~0.703-0.705 / holdout ~0.704-0.709`, i.e. a `+0.017..+0.022` gain over
+the best single model on both splits. Representative points:
+
+| Config (YOLO:w, IoU) | Val mAP50-95 | Holdout mAP50-95 |
+|---|---:|---:|
+| 1.5, 0.65 (submitted earlier, LB 0.64458) | 0.703514 | 0.707621 |
+| 1.3, 0.64 | 0.703585 | 0.708775 |
+| 1.4, 0.66 | 0.703858 | 0.708169 |
+| 1.9, 0.66 | 0.704027 | 0.704715 |
+
+### 9.2 Class-wise parameter selection
+
+Because the plateau is broad, per-class parameters were selected from 8
+pre-scored stable candidates
+(`results/yolo_rfdetr_class_candidates/`: YOLO weight 1.3/1.4/1.5/1.9 x IoU
+0.63/0.64/0.65/0.66 variants) using
+`scripts/select_classwise_fusion.py`. Selection requires, per class, that
+both validation and holdout AP be non-decreasing versus the `13b` baseline
+(strict), or allowed to regress by at most a tolerance (0.003/0.005/0.01/0.02
+variants).
+
+| Variant | Val mAP50-95 | Holdout mAP50-95 |
+|---|---:|---:|
+| strict (tol 0) | 0.704382 | **0.709693** |
+| tol 0.001 | 0.704906 | 0.709797 |
+| tol 0.003 (submitted) | **0.705525** | 0.709547 |
+| tol 0.005 / 0.01 / 0.02 | 0.705525 | 0.709547 |
+
+Widening the tolerance beyond 0.003 changes nothing: the selection has
+reached a plateau, so further relaxation does not overfit. The tol-0.003
+per-class selection picks `19/0.66` for `rubik`, `apple_plastic`,
+`badminton`, `egg` (+0.0081 val for `rubik`, +0.0056 holdout for
+`apple_plastic`), and `14b/0.66` for `stone_block` (+0.0070 val) among
+others; the largest single regressions allowed are within 0.003 AP on one
+split (`egg`, `table_tennis`).
+
+### 9.3 Confidence / top-K post-processing sweep
+
+Additional confidence truncation and top-K limits were scanned on the fused
+output: no truncation with `top-K=300` (the validator limit) is best; extra
+trimming only removes useful low-confidence boxes. No additional
+post-processing was adopted.
+
+### 9.4 Kaggle verification
+
+| Submission | Local val/holdout | Public LB |
+|---|---:|---:|
+| global 1.5:1 IoU 0.65 | 0.703514 / 0.707621 | 0.64458 |
+| class-wise tol 0.003 | 0.705525 / 0.709547 | **0.64630** |
+
+The class-wise selection improved Public LB by `+0.00172` over the global
+fusion and is `+0.04013` over the single-model TTA submission `0.60617`.
+Local-to-Public gap remains ~0.06, consistent with earlier observations.
+
+The class-wise test submission `yolo_rfdetr_classwise_tol003.csv` passed the
+full local validator (1000/1000 test images, 18 legal classes, 0 NaN/Inf,
+0 invalid/out-of-bounds boxes, 0 duplicate row ids, <=300 detections/image).
+
+## 10. Known implementation pitfalls already fixed
 
 The following issues were found during development and should not be reintroduced:
 
@@ -368,7 +444,7 @@ The following issues were found during development and should not be reintroduce
 4. RF-DETR output includes an extra background class slot; submission generation must filter class ID 18 and keep only 0..17.
 5. A nominal RF-DETR `resolution=512` with multi-scale enabled did not mean a fixed 512 short side; logs showed a training scale of 672. Small-v2 explicitly disables multi-scale to obtain the intended fixed 384 short side.
 
-## 10. High-priority hypotheses for improvement
+## 11. High-priority hypotheses for improvement
 
 These are hypotheses, not established conclusions.
 
@@ -403,7 +479,7 @@ YOLO11s HSI16 has the best Public LB while RF-DETR has much stronger local local
 
 Per-band diagnostics found small train/test standardized mean differences and very low saturation under clip=320, except modest concentration in one band. Float32 plus train-fold normalization did not improve the group-aware baseline. More local or scene-conditional normalization could still be explored, but global train-fold statistics are not currently promising.
 
-## 11. Suggested experiment order
+## 12. Suggested experiment order
 
 To avoid spending Kaggle submissions inefficiently, a reviewer should prioritize experiments that can be rejected locally:
 
@@ -414,7 +490,7 @@ To avoid spending Kaggle submissions inefficiently, a reviewer should prioritize
 5. consider a final single-model retraining recipe that preserves the verified 384-stage behavior and three-scale TTA;
 6. only consume a Kaggle submission after >=0.005 consistent val+holdout improvement.
 
-## 12. Reproducibility map
+## 13. Reproducibility map
 
 - Annotation audit: `scripts/audit_annotations.py`
 - Audited split: `scripts/prepare_stratified_hsi_split.py`
@@ -424,6 +500,10 @@ To avoid spending Kaggle submissions inefficiently, a reviewer should prioritize
 - RF-DETR submission generation: `scripts/make_rfdetr_submission.py`
 - RF-DETR crop-TTA generation: `scripts/make_rfdetr_crop_tta.py`
 - Same-model WBF/NMS fusion: `scripts/fuse_detection_csv.py`
+- Cross-model class-wise WBF fusion: `scripts/fuse_detection_csv_classwise.py`
+- Class-wise fusion parameter selection: `scripts/select_classwise_fusion.py`
+- Class-wise fusion results: `results/yolo_rfdetr_wbf_refine/`,
+  `results/yolo_rfdetr_class_candidates/`, `results/yolo_rfdetr_classwise/`
 - Prediction CSV scoring: `scripts/score_detection_csv.py`
 - Kaggle submission helper: `scripts/submit_kaggle.py`
 - YOLO training: `scripts/train_yolo.py`

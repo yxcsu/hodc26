@@ -18,3 +18,6 @@ rfdetr_group42_float32_trainstats,RF-DETR Small,native_hsi16_float32,10,672,16,0
 rfdetr_group42_v2_control,RF-DETR Small,native_hsi16,10,384,16,0.688847,0.672842,,,fixed 384; gain 0.95-1.05 + tilt 0.03 + noise 0.0002
 rfdetr_group42_v2_gain_only,RF-DETR Small,native_hsi16,10,384,16,0.690437,0.674656,,,fixed 384; gain only; +0.0016/+0.0018 over control, below +0.005 submission threshold
 rfdetr_group42_v2_adapter,RF-DETR Small,native_hsi16,10,384,16,0.683614,0.669159,,,identity 1x1 16->16 spectral adapter; 2ep adapter-only + 8ep joint; worse than gain-only control
+yolo3_rfdetr2_wbf_15_065,YOLO11s+RF-DETR Small,native_hsi16 ensemble,tt,384+448+512,16,0.7035137998,0.7076211483,0.64458,,global WBF 1.5:1 IoU 0.65; +0.017/+0.026 vs best single; first cross-model submission
+yolo3_rfdetr2_classwise_strict,YOLO11s+RF-DETR Small,native_hsi16 ensemble,tt,384+448+512,16,0.704382,0.709693,,,"class-wise per-class WBF params from 8 candidates, both-splits non-decreasing"
+yolo3_rfdetr2_classwise_tol003,YOLO11s+RF-DETR Small,native_hsi16 ensemble,tt,384+448+512,16,0.7055254274,0.709547,,0.64630,,class-wise tol 0.003; current best Public LB; tol 0.005+ unchanged (plateau)
