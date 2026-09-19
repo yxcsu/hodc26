@@ -41,7 +41,7 @@ def main() -> None:
     parser = argparse.ArgumentParser(
         description="Fuse YOLO/RF-DETR CSVs using per-class WBF parameters."
     )
-    parser.add_argument("--inputs", type=Path, nargs=2, required=True)
+    parser.add_argument("--inputs", type=Path, nargs="+", required=True)
     parser.add_argument("--class-config", type=Path, required=True)
     parser.add_argument("--out", type=Path, required=True)
     parser.add_argument(
@@ -66,14 +66,14 @@ def main() -> None:
     grouped = load_rows(args.inputs, args.conf)
 
     by_image: dict[int, list[tuple[int, float, list[float]]]] = defaultdict(list)
+    num_rfdetr_inputs = len(args.inputs) - 1
     for (image_id, class_id), base_items in grouped.items():
         if str(class_id) not in class_cfg:
             raise KeyError(f"Missing class config for class_id={class_id}")
         spec = class_cfg[str(class_id)]
-        weights = [
-            float(spec["yolo_weight"]),
-            float(spec.get("rfdetr_weight", 1.0)),
-        ]
+        yolo_weight = float(spec["yolo_weight"])
+        rfdetr_weight = float(spec.get("rfdetr_weight", 1.0))
+        weights = [yolo_weight] + [rfdetr_weight] * num_rfdetr_inputs
         items = [
             {
                 **item,
