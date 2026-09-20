@@ -47,6 +47,7 @@ def main() -> None:
     model_args = argparse.Namespace(**cfg._cfg_dict.to_dict())
     model_args.dataset_file = "coco"
     model_args.coco_path = str(args.coco_root.resolve())
+    model_args.device = args.device
     model_args.fix_size = False
     model_args.strong_aug = False
     model_args.num_classes = 18
