@@ -38,6 +38,15 @@ results/holdout_*.csv
 results/group*_val_*.csv
 results/group*_holdout_*.csv
 
+# DINO / cross-model experiment workspaces. These contain large per-image
+# prediction CSVs; compact conclusions are tracked in docs instead.
+results/classwise_v2_rebuilt/
+results/dino_classwise_gate_group2026/
+results/dino_epoch10_11_wbf/
+results/dino_group2026_best/
+results/three_model_wbf_group2026/
+results/final_dino_gate_test/
+
 # Local credentials
 .kaggle/
 kaggle.json
