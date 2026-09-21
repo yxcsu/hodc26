@@ -15,7 +15,8 @@ fi
 git -C "$DINO_ROOT" fetch --all --tags
 git -C "$DINO_ROOT" checkout "$DINO_COMMIT"
 
-"$PYTHON" -m pip install +  cython submitit termcolor addict "yapf==0.32.0" timm pycocotools
+"$PYTHON" -m pip install \
+  cython submitit termcolor addict "yapf==0.32.0" timm pycocotools
 
 "$PYTHON" - "$DINO_ROOT" <<'PY'
 from pathlib import Path
@@ -125,7 +126,8 @@ PY
 
 pushd "$DINO_ROOT/models/dino/ops" >/dev/null
 rm -rf build
-CUDA_HOME="$CUDA_HOME" TORCH_CUDA_ARCH_LIST="$TORCH_CUDA_ARCH_LIST" +  "$PYTHON" setup.py build install
+CUDA_HOME="$CUDA_HOME" TORCH_CUDA_ARCH_LIST="$TORCH_CUDA_ARCH_LIST" \
+  "$PYTHON" setup.py build install
 popd >/dev/null
 
 echo "Official DINO ready at: $DINO_ROOT"

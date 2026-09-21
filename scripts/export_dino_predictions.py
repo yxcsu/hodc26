@@ -30,6 +30,10 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--num-workers", type=int, default=4)
     parser.add_argument("--conf", type=float, default=0.0)
     parser.add_argument("--top-k", type=int, default=300)
+    parser.add_argument("--multispectral-channels", type=int, choices=(3, 19), default=3)
+    parser.add_argument("--eval-scale", type=int, default=672)
+    parser.add_argument("--eval-max-size", type=int, default=None)
+    parser.add_argument("--amp", action="store_true")
     return parser.parse_args()
 
 
@@ -54,8 +58,12 @@ def main() -> None:
     model_args.dn_labelbook_size = 19
     model_args.num_queries = 300
     model_args.num_select = args.top_k
-    model_args.data_aug_scales = [480, 544, 608, 672]
-    model_args.data_aug_max_size = 1344
+    model_args.multispectral_channels = args.multispectral_channels
+    model_args.hsi_residual_stem = args.multispectral_channels == 19
+    model_args.data_aug_scales = [args.eval_scale]
+    model_args.data_aug_max_size = (
+        args.eval_max_size if args.eval_max_size is not None else args.eval_scale * 2
+    )
     model_args.data_aug_scales2_resize = [400, 500, 600]
     model_args.data_aug_scales2_crop = [384, 600]
 
@@ -84,7 +92,12 @@ def main() -> None:
     with torch.inference_mode():
         for samples, targets in loader:
             samples = samples.to(device)
-            outputs = model(samples)
+            with torch.autocast(
+                device_type=device.type,
+                dtype=torch.float16,
+                enabled=args.amp and device.type == "cuda",
+            ):
+                outputs = model(samples)
             orig_sizes = torch.stack([target["orig_size"] for target in targets]).to(
                 device
             )
