@@ -20,6 +20,11 @@ def parse_args() -> argparse.Namespace:
     )
     parser.add_argument("--checkpoint", type=Path, required=True)
     parser.add_argument(
+        "--config",
+        default="config/DINO/DINO_4scale.py",
+        help="DINO config path relative to --dino-root.",
+    )
+    parser.add_argument(
         "--coco-root",
         type=Path,
         required=True,
@@ -47,7 +52,7 @@ def main() -> None:
     from util import misc as utils  # type: ignore
     from util.slconfig import SLConfig  # type: ignore
 
-    cfg = SLConfig.fromfile(str(dino_root / "config/DINO/DINO_4scale.py"))
+    cfg = SLConfig.fromfile(str(dino_root / args.config))
     model_args = argparse.Namespace(**cfg._cfg_dict.to_dict())
     model_args.dataset_file = "coco"
     model_args.coco_path = str(args.coco_root.resolve())
