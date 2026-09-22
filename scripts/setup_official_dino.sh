@@ -57,6 +57,16 @@ new = (
 )
 if old in text:
     text = text.replace(old, new)
+
+# Resume checkpoints also contain argparse.Namespace metadata.  Explicitly
+# allow trusted local checkpoints under PyTorch 2.6+.
+old = "checkpoint = torch.load(args.resume, map_location='cpu')"
+new = (
+    "with torch.serialization.safe_globals([argparse.Namespace]):\n"
+    "                checkpoint = torch.load(args.resume, map_location='cpu')"
+)
+if old in text:
+    text = text.replace(old, new)
 main_path.write_text(text)
 
 # Gradient accumulation keeps the official effective batch size of 16 on a
