@@ -20,29 +20,35 @@ Frozen reload-and-score results for the Small-v2 checkpoint are:
 The earlier `0.68629` value was a training-time peak and is not used as the
 reproducible checkpoint score. With legal same-model `384/448/512` TTA and
 class-wise WBF, the same checkpoint reaches `0.69284 / 0.69007`
-(validation/holdout) and **Public LB `0.60617`**, which is the current
-repository best.
+(validation/holdout) and Public LB `0.60617`.
 
 The frozen checkpoint/split/script hashes and environment are recorded under
 `results/repro_384/`.
 
-## Current best: YOLO + RF-DETR class-wise WBF ensemble
+## Current best: YOLO + RF-DETR + DINO class-gated WBF
 
-The strongest pipeline fuses YOLO11s HSI16 and RF-DETR Small-v2 (group-2026
-split, 3-scale TTA) predictions with per-class WBF parameters:
+The strongest Public-LB pipeline adds a DINO-R50 4-scale branch to the
+YOLO11s HSI16 + RF-DETR Small-v2 fusion and enables DINO only on selected
+classes:
 
-- validation mAP50-95: `0.705525`; holdout mAP50-95: `0.709547`
-  (class-wise selection, tolerance 0.003);
-- strict variant (both splits non-decreasing per class): `0.704382 / 0.709693`;
-- **Public LB `0.64630`** (`submissions/yolo_rfdetr_classwise_tol003.csv`,
-  validator-clean), the current repository best and `+0.04013` over the
-  single-model TTA submission `0.60617`.
+- DINO gate (10 classes): validation `0.709772`, holdout `0.708759`;
+- **Public LB `0.64913`** (`submissions/yolo_rfdetr_dino_gate.csv`),
+  the current repository best;
+- conservative 8-class DINO gate: `0.709693 / 0.709400`, Public
+  `0.64912`;
+- YOLO + RF-DETR classwise-v2 without DINO: `0.706265 / 0.709939`,
+  Public `0.64685`.
 
-Per-class parameters are selected from 8 pre-scored stable fusion
-configurations (`results/yolo_rfdetr_class_candidates/`) with a per-split
-tolerance cap of 0.003 AP; widening the tolerance to 0.005/0.01 no longer
-changes the selection (parameter plateau). Confidence truncation and top-K
-sweeps confirmed no extra post-processing is needed (top-K=300 best).
+The best single-model HSI-DINO experiment uses a 19-channel
+(`16 HSI + pseudo-RGB 5/8/13`) residual stem with spectral residual scale
+`alpha=0.23`. It reaches `0.657806 / 0.657169` locally and Public
+`0.58096`, versus pseudo-RGB DINO Public `0.57900`. The independent
+seed-9173 audit preserves the HSI gain (`+0.000519 / +0.000915`).
+See `docs/DINO_EXPERIMENT_20260920.md` for the complete audit and rejected
+adaptation variants.
+
+The competition's final no-ensemble/code-review requirements must be checked
+before treating the cross-model WBF score as a final eligible solution.
 
 ## Experiment documentation
 
